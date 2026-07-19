@@ -1,0 +1,30 @@
+# =====================================================================
+#  channel_profile.second.yaml  —  Delta Education (@DeltaEducation-18)
+#  Edtech channel for Scaler School of Technology (SST) admission + NSET prep.
+#  Drives titles/description/tone for this channel. Edit any line.
+# =====================================================================
+
+niche:        "Edtech channel that helps students get into Scaler School of Technology (SST) — NSET entrance-exam prep (bootcamps + concepts like probability, aptitude, logical reasoning), AI & Human interview prep, and honest decision/guidance videos (is Scaler worth it, branch comparisons, BSc-from-Scaler vs BTech elsewhere)."
+
+audience:     "Students in class 11-12 and JEE aspirants / post-JEE students (16-19, India) who are evaluating or actively preparing for Scaler School of Technology and its NSET entrance test."
+
+tone:         "Clear, informative and trustworthy — a knowledgeable senior/mentor guiding students. Educational and exam-focused, honest and reassuring, no empty hype. Curiosity hooks like 'what they don't tell you' are on-brand when they're truthful."
+
+# Words the model must NEVER use (clickbait / off-brand).
+banned_words:
+  - "guaranteed selection"
+  - "100% sure shot"
+  - "cheat"
+
+# Links appended to every description (fill what you use, leave blank to skip).
+links:
+  instagram:  ""
+  website:    ""
+  twitter:    ""
+  linkedin:   ""
+
+# Standard call-to-action added near the top/bottom of descriptions.
+default_cta:  "Subscribe to Delta Education for NSET prep, Scaler School of Technology guidance, and everything you need to crack SST."
+
+# Extra context the model should know (helps SEO keyword usage).
+about:        "Delta Education prepares students for Scaler School of Technology (SST) admission and its entrance exam, NSET. Two content types: (1) educational prep — NSET bootcamps and subject concepts (aptitude, mathematics/probability, logical reasoning) and prep for the AI + Human interview rounds; (2) decision/guidance videos — should you join Scaler, CSE vs AI vs Data Science, BSc from Scaler vs BTech from other colleges, honest 'what they don't tell you' experience videos. IMPORTANT keywords to front-load in titles/tags where relevant: 'Scaler School of Technology', 'SST', 'NSET', 'AI & Human Interview', branch names (CSE / AI / Data Science), and the current year for time-sensitive topics. Channel name 'Delta Education' often appears as a trailing tag in titles."

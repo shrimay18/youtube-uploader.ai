@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — youtube_manager.ai</title>
+  <meta name="description" content="How youtube_manager.ai handles your data. Your API keys, YouTube tokens, videos and transcripts stay encrypted on your device and are never sent to us." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="/"><span class="mark">▶</span> youtube_manager<b>.ai</b></a>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="doc">
+    <div class="wrap narrow">
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: 19 July 2026</p>
+
+      <p>This Privacy Policy explains how <strong>youtube_manager.ai</strong> (“we”, “us”, the “App”) handles information when you use our application. The App helps you turn a video into a publish-ready, SEO-optimized YouTube post and publish it to YouTube channels you own. It is designed to run <strong>locally on your own device</strong>.</p>
+
+      <div class="callout">
+        <strong>The short version.</strong> Your API keys, your YouTube access tokens, your videos, transcripts and generated content stay <strong>encrypted on your device</strong> and are never sent to or stored by us. The only things we hold are the basics needed to run your account (your name and email from Google Sign-In) and anonymous-style usage counts. We never sell your data, never show ads, and no human at youtube_manager.ai reads your content.
+      </div>
+
+      <div class="toc">
+        <h4>Contents</h4>
+        <ol>
+          <li><a href="#collect">What we collect</a></li>
+          <li><a href="#device">What stays on your device</a></li>
+          <li><a href="#google">Google &amp; YouTube data</a></li>
+          <li><a href="#use">How we use information</a></li>
+          <li><a href="#share">Sharing &amp; subprocessors</a></li>
+          <li><a href="#retention">Retention &amp; deletion</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#children">Children</a></li>
+          <li><a href="#changes">Changes</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </div>
+
+      <h2 id="collect">1. What we collect</h2>
+      <p>We keep our collection to the minimum needed to run the service:</p>
+      <ul>
+        <li><strong>Account information.</strong> When you sign in with Google, we receive your name, email address and Google account identifier. Sign-in is handled through our authentication provider (Supabase). We use this to create and secure your account.</li>
+        <li><strong>Usage events (telemetry).</strong> We record lightweight, non-content events such as “app opened”, “draft generated” and “video published”, along with timestamps and simple counts. This tells us how the product is used so we can improve it. These events contain <strong>no</strong> video content, titles, descriptions, transcripts, or keys.</li>
+      </ul>
+
+      <h2 id="device">2. What stays on your device (and never reaches us)</h2>
+      <p>The following are stored <strong>only</strong> on your own device — encrypted at rest — and are never transmitted to our servers:</p>
+      <ul>
+        <li>Your third-party API keys (for example Google Gemini, Groq, or Anthropic).</li>
+        <li>Your YouTube authorization tokens for each channel you connect.</li>
+        <li>Your source videos, extracted audio, and transcripts.</li>
+        <li>The titles, descriptions, tags, thumbnails and other metadata the App generates.</li>
+      </ul>
+      <p>Because processing happens locally and requests to AI providers are made directly from your device using your own keys, we never act as an intermediary for your content.</p>
+
+      <h2 id="google">3. Google user data &amp; the YouTube API</h2>
+      <p>The App uses <strong>YouTube API Services</strong>. By using these features you also agree to the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer">YouTube Terms of Service</a> and acknowledge the <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Google Privacy Policy</a>.</p>
+
+      <h3>Permissions we request</h3>
+      <p>When you connect a YouTube channel, we request the <code>https://www.googleapis.com/auth/youtube.force-ssl</code> scope. We use it <strong>solely</strong> to act on the channels you explicitly connect, in order to:</p>
+      <ul>
+        <li>upload the videos you choose to publish;</li>
+        <li>set their title, description, tags, category and thumbnail;</li>
+        <li>set the privacy status or schedule a publish time you pick; and</li>
+        <li>optionally post a pinned comment you have written.</li>
+      </ul>
+      <p>Your YouTube access token is stored encrypted on your device and is used to make these requests directly from your device. You can revoke the App’s access at any time from <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">your Google Account permissions</a>, or by disconnecting the channel inside the App.</p>
+
+      <div class="callout" id="limited-use">
+        <strong>Limited Use disclosure.</strong> youtube_manager.ai’s use and transfer of information received from Google APIs to any other app adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes" target="_blank" rel="noreferrer">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements. Specifically: we do not transfer or sell Google user data to third parties for advertising, market research, or similar purposes; we do not use it for serving ads; no humans read it except with your explicit permission, to comply with law, or as needed for security; and we use it only to provide and improve the user-facing features described above.
+      </div>
+
+      <h2 id="use">4. How we use information</h2>
+      <ul>
+        <li>To authenticate you and keep your account secure.</li>
+        <li>To provide the App’s features (generation and publishing happen on your device).</li>
+        <li>To understand aggregate usage and improve the product.</li>
+        <li>To respond to your support requests.</li>
+      </ul>
+      <p>We do <strong>not</strong> use your content or Google user data to train machine-learning models, and we do not sell any data.</p>
+
+      <h2 id="share">5. Sharing &amp; subprocessors</h2>
+      <p>We don’t sell your data. We rely on a small number of service providers strictly to operate the App:</p>
+      <ul>
+        <li><strong>Google</strong> — for Sign-In and the YouTube Data API (only when you connect a channel and publish).</li>
+        <li><strong>Supabase</strong> — for authentication and for storing your account record and usage events.</li>
+        <li><strong>The AI providers you configure</strong> (e.g. Google Gemini, Groq, Anthropic) — requests are sent from your device using your own keys, under those providers’ terms.</li>
+      </ul>
+      <p>We may also disclose information if required by law or to protect the rights, safety and security of our users and the service.</p>
+
+      <h2 id="retention">6. Data retention &amp; deletion</h2>
+      <ul>
+        <li><strong>On-device data</strong> (keys, tokens, videos, transcripts, drafts) is under your control. Disconnecting a channel removes its stored token; resetting your account removes your local encrypted store.</li>
+        <li><strong>Account &amp; usage data</strong> held by us is retained while your account is active. You can request deletion of your account record and usage history at any time by emailing us (see Contact). We will delete it within a reasonable period, subject to legal obligations.</li>
+        <li>You can revoke YouTube access independently at any time via <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">Google Account permissions</a>.</li>
+      </ul>
+
+      <h2 id="security">7. Security</h2>
+      <p>On your device, secrets are encrypted at rest — API keys are protected with a key derived from your account credentials, and connected-account tokens are encrypted with your account key and held in your operating system’s secure storage. Data in transit to our authentication provider is encrypted with TLS. No method of storage or transmission is perfectly secure, but we design the App so that the most sensitive data never leaves your device in the first place.</p>
+
+      <h2 id="children">8. Children</h2>
+      <p>The App is not directed to children under 13 (or the minimum age of digital consent in your country), and we do not knowingly collect their personal information.</p>
+
+      <h2 id="changes">9. Changes to this policy</h2>
+      <p>We may update this Privacy Policy from time to time. When we do, we will revise the “Last updated” date above, and significant changes will be reflected here.</p>
+
+      <h2 id="contact">10. Contact us</h2>
+      <p>Questions about this policy or your data? Email us at <a href="mailto:support@youtube-manager.ai">support@youtube-manager.ai</a>.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <a class="brand" href="/"><span class="mark">▶</span> youtube_manager<b>.ai</b></a>
+      <span class="muted">© 2026 youtube_manager.ai</span>
+      <nav class="links">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="mailto:support@youtube-manager.ai">Contact</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

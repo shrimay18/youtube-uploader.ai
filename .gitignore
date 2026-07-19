@@ -1,0 +1,25 @@
+# Secrets — never commit
+config/client_secret.json
+config/token*.json
+config/account.json
+config/*.secret.*
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Working artifacts
+drafts/
+downloads/
+*.wav
+*.mp3
+
+# Frontend
+frontend/node_modules/
+# (frontend/dist IS committed so `youtube_manager serve` works without a build step)
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,107 @@
+# TubeMate runtime settings
+
+# --- Cloud (Supabase) ---------------------------------------------------
+# Public config for the hosted auth + admin-telemetry layer. These two values
+# are PUBLIC by design (the anon/publishable key is meant for the frontend;
+# Row Level Security is what protects data). Never put the service_role key here.
+supabase:
+  url:      "https://vjfxmsfmyeiogeghmzrx.supabase.co"
+  anon_key: "sb_publishable_Mn7Xgk35qcBtXio3y7sjdA_PNRyJ2Vf"
+  # Admin dashboard: only these emails can open it, and ONLY on a machine that has
+  # SUPABASE_SERVICE_KEY set in .env (the service_role/secret key — never commit it,
+  # never ship it to users). On user installs this stays dormant.
+  admin_emails:
+    - "shrimaysomani18@gmail.com"
+    - "wcgroup.blr@gmail.com"
+
+# --- Channels -----------------------------------------------------------
+# You have multiple YouTube channels. Define each here and pick one per upload
+# with `--channel <key>`. Each channel gets its own login token
+# (config/token.<key>.json) and can use its own SEO/tone profile file.
+#
+#   `profile:` -> which file in config/ shapes titles/description/tone for this
+#   channel. Point two channels at the same file if they share a brand, or give
+#   each its own (copy channel_profile.yaml -> channel_profile.<key>.yaml).
+default_channel: shrimay
+channels:
+  shrimay:
+    label:   "Shrimay Somani"
+    handle:  "@shrimay_somani"
+    profile: channel_profile.yaml
+  delta:
+    label:   "Delta Education"
+    handle:  "@DeltaEducation-18"
+    profile: channel_profile.second.yaml
+
+# --- LLM engine ---------------------------------------------------------
+# Primary engine: gemini | groq | ollama | claude
+engine: gemini
+
+# On quota/failure, fall through these in order (skips cloud ones with no key).
+# Gemini (free) -> Groq (free, fast) -> Ollama (local, unlimited).
+fallback: [groq, ollama]
+
+gemini:
+  model: gemini-flash-latest     # free tier; fast + good enough for metadata
+  # API key read from env var GEMINI_API_KEY (never store keys in this file)
+
+groq:
+  model: llama-3.3-70b-versatile # free + fast; key from env GROQ_API_KEY
+
+ollama:
+  model: llama3.1:8b             # requires local `ollama serve` (fully offline)
+  host: http://localhost:11434
+
+claude:
+  model: claude-sonnet-5         # requires ANTHROPIC_API_KEY (paid)
+
+# --- Localization / scheduling -----------------------------------------
+timezone: Asia/Kolkata           # IST — used for publish_at timestamps
+
+# --- Transcription ------------------------------------------------------
+whisper:
+  model: small                   # tiny | base | small | medium | large-v3 (bigger = more accurate, slower)
+  device: auto                   # auto = use NVIDIA GPU if present (much faster), else cpu
+  compute_type: auto             # auto = float16 on GPU, int8 on CPU
+  vad_filter: true               # skip silence -> faster + avoids hallucination loops
+  task: translate                # translate = force ENGLISH output (robust for Hindi/Hinglish, clean + fast). Use "transcribe" only to keep the original language.
+  language: null                 # null = auto-detect source language
+  beam_size: 1                   # 1 = fast (greedy); 5 = slightly better but ~1.5x slower
+  cpu_threads: 0                 # 0 = use all cores
+  max_minutes: 0                 # 0 = transcribe the FULL video (metadata reflects the whole thing). Set >0 only to cap very long videos for speed.
+
+# --- Research -----------------------------------------------------------
+research:
+  autocomplete_seeds: 6          # how many transcript-derived seeds to expand
+  trends: true
+  ranking_titles: true           # fetch top-ranking titles for the topic (needs YOUTUBE_API_KEY)
+  ranking_titles_count: 8        # how many ranking titles to feed the title writer
+
+# --- Tags ---------------------------------------------------------------
+# Budget split: competitor/proven tags fill most of the 500 chars, but a slice is
+# reserved for tags built from THIS video's title + transcript so it ranks for its
+# own topic (not just the broad niche).
+tags:
+  max_chars: 500                 # YouTube's total tag-length limit
+  video_min_chars: 130           # reserved for this video's own topic tags (rest = competitor)
+
+# --- Title generation ---------------------------------------------------
+# Generate 7 candidates informed by the top ranking titles, score EACH with a
+# local SEO scorer (0-100, tuned to this topic's ranking data), pick the best.
+title:
+  min_seo_score: 70              # regenerate if the best candidate scores below this (0-100)
+  max_rounds: 2                  # regenerate attempts if it falls short
+
+# --- Defaults -----------------------------------------------------------
+defaults:
+  category_id: "22"              # 22 = People & Blogs (see youtube.py for map)
+  privacy: private               # always upload private; publishAt flips it live
+  made_for_kids: false           # COPPA — false = not child-directed (correct for these channels)
+  short_max_seconds: 120         # <= this = auto-classified as a Short (else long-form)
+  language: en                   # metadata language (titles/description are English)
+  audio_language: ""             # spoken language; blank = auto-detect from the transcript (Whisper)
+
+# --- Paths --------------------------------------------------------------
+paths:
+  drafts: drafts
+  downloads: downloads

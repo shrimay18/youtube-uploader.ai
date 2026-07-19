@@ -1,0 +1,29 @@
+# =====================================================================
+#  channel_profile.yaml  —  Shrimay Somani (@shrimay_somani)
+#  Drives titles/description/tone for this channel. Edit any line.
+# =====================================================================
+
+niche:        "Tech, coding & engineering student life — tutorials, project build-logs, and honest storytelling about studying at Scaler School of Technology and life as an aspiring engineer."
+
+audience:     "Students & aspiring software engineers in India (16-24) — CS/tech students, coding beginners, and people curious about Scaler / new-age tech colleges."
+
+tone:         "Authentic, engaging, story-driven and educational — relatable student voice, curious and motivating, not corporate or hypey."
+
+# Words the model must NEVER use (clickbait / off-brand).
+banned_words:
+  - "SHOCKING"
+  - "you won't believe"
+  - "gone wrong"
+
+# Links appended to every description (fill what you use, leave blank to skip).
+links:
+  instagram:  ""
+  website:    ""
+  twitter:    ""
+  linkedin:   ""
+
+# Standard call-to-action added near the top/bottom of descriptions.
+default_cta:  "Subscribe to follow the journey through tech, coding, and student life at Scaler."
+
+# Extra context the model should know.
+about:        "Creator is a student at Scaler School of Technology documenting the engineering journey — coding tutorials, project builds, campus/student life, and lessons from learning tech. Content mixes practical how-tos with personal narrative."
