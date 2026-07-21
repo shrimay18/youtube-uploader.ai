@@ -3,78 +3,163 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>youtube_manager.ai — AI YouTube uploads that stay private</title>
-  <meta name="description" content="youtube_manager.ai turns a video into a ready-to-publish, SEO-optimized YouTube post — title, description, tags, thumbnail — and publishes to your channels. Runs on your device; your keys and tokens never leave it." />
+  <title>youtube_manager.ai — post to every channel, on autopilot</title>
+  <meta name="description" content="Drop a video, get a scroll-stopping title, description, tags & thumbnail, and blast it to all your YouTube channels at once. Runs on your device — your keys never leave it." />
+  <meta property="og:title" content="youtube_manager.ai" />
+  <meta property="og:description" content="Your videos, publish-ready. Built for creators. Private by default." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css?v=5" />
 </head>
 <body>
   <header class="nav">
     <div class="wrap">
       <a class="brand" href="/"><span class="mark">▶</span> youtube_manager<b>.ai</b></a>
       <nav class="nav-links">
-        <a href="#how">How it works</a>
+        <a href="#what">What it does</a>
+        <a href="#channels">Multi-channel</a>
         <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
+        <a class="nav-cta" href="#start">Get started ↗</a>
       </nav>
     </div>
   </header>
 
   <main>
+    <!-- HERO -->
     <section class="hero">
       <div class="wrap">
-        <span class="eyebrow">AI YouTube Manager</span>
-        <h1>A studio that works while you don’t.</h1>
-        <p>Drop a video and get a ready-to-publish, SEO-optimized YouTube post — title, description, tags, chapters and thumbnail — then publish or schedule it to as many of your channels as you like. It runs on your own device, with your own keys.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="#how">See how it works</a>
-          <a class="btn btn-ghost" href="/privacy">Read our privacy promise</a>
+        <div class="hero-copy">
+          <span class="sticker reveal from-l"><span class="blip"></span> your YouTube co-pilot</span>
+          <h1 class="reveal from-l">
+            Post to <span class="hl">every channel</span>.<br />
+            Sound like <span class="grad">nobody else.</span>
+          </h1>
+          <p class="lede reveal from-l">Drop a video → get a scroll-stopping YouTube title, description, tags, chapters &amp; thumbnail → publish to <b>all</b> your channels at once. Your keys stay on your machine. No cap. 🔒</p>
+          <div class="cta-row reveal from-l">
+            <a class="btn btn-primary magnetic" href="#start">Start creating →</a>
+            <a class="btn btn-ghost" href="#what">See the magic</a>
+            <span class="cta-note">no card • your own AI keys • runs locally</span>
+          </div>
         </div>
+
+        <div class="visual reveal from-r">
+          <div class="yt-card">
+            <div class="yt-thumb">
+              <div class="scene" aria-hidden="true"></div>
+              <div class="yt-play" aria-hidden="true"></div>
+              <span class="yt-badge">✨ auto-generated</span>
+              <span class="yt-dur">10:42</span>
+            </div>
+            <div class="yt-body">
+              <h3 class="yt-title">I Tried Every Hostel in Manali 🏔️ (Brutally Honest Review)</h3>
+              <div class="yt-row">
+                <img class="yt-ch" src="/assets/delta.jpg" alt="Delta Education" />
+                <div><b style="font-family:var(--display)">Delta Education</b><div class="sub">publishing to 3 channels · today</div></div>
+              </div>
+              <div class="yt-tags">
+                <span>hostel life</span><span>manali travel</span><span>budget trip</span><span>honest review</span>
+              </div>
+              <div class="yt-foot"><span class="pubdot"></span> Title SEO score 92 · ready to publish</div>
+            </div>
+          </div>
+        </div>
+
+        <span class="floaty f1" aria-hidden="true">🎬</span>
+        <span class="floaty f2" aria-hidden="true">✨</span>
+        <span class="floaty f3" aria-hidden="true">🔥</span>
       </div>
     </section>
 
-    <section class="wrap" id="how">
-      <div class="features">
-        <div class="feature">
-          <div class="ic">🎬</div>
-          <h3>Video → publish-ready post</h3>
-          <p>Transcribes your video and writes a title, description, tags, chapters and thumbnail tuned to what actually ranks.</p>
+    <!-- MARQUEE -->
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee">
+        <div class="marquee-track">
+          <span>YOUTUBE SEO<span class="star">▶</span>TITLES<span class="star">▶</span>TAGS<span class="star">▶</span>THUMBNAILS<span class="star">▶</span>CHAPTERS<span class="star">▶</span>SCHEDULING<span class="star">▶</span>MULTI-CHANNEL<span class="star">▶</span></span>
+          <span>YOUTUBE SEO<span class="star">▶</span>TITLES<span class="star">▶</span>TAGS<span class="star">▶</span>THUMBNAILS<span class="star">▶</span>CHAPTERS<span class="star">▶</span>SCHEDULING<span class="star">▶</span>MULTI-CHANNEL<span class="star">▶</span></span>
         </div>
-        <div class="feature">
-          <div class="ic">📡</div>
-          <h3>Publish to many channels</h3>
-          <p>Connect as many YouTube channels as you own and send the same video to all of them — review each or upload directly.</p>
+      </div>
+    </div>
+
+    <!-- WHAT IT DOES (bento) -->
+    <section class="sec wrap" id="what">
+      <div class="sec-head reveal">
+        <div class="kicker">the whole workflow</div>
+        <h2>One video in. A publish-ready post out.</h2>
+        <p>Everything that usually eats your afternoon — done in one pass, tuned to what actually ranks.</p>
+      </div>
+      <div class="bento">
+        <div class="tile big reveal">
+          <div class="emoji">🎬</div>
+          <h3>Video → publish-ready YouTube post</h3>
+          <p>We transcribe your whole video and write a title, description, chapters &amp; thumbnail that match how real creators in your niche win on YouTube.</p>
+          <div style="margin-top:14px">
+            <span class="tag-mini">#hostellife</span><span class="tag-mini">day in the life</span><span class="tag-mini">honest review</span><span class="tag-mini">2026</span>
+          </div>
         </div>
-        <div class="feature">
-          <div class="ic">🔐</div>
-          <h3>Private by design</h3>
-          <p>Your API keys and YouTube tokens are encrypted on your device and never sent to us. We can’t see them.</p>
+        <div class="tile big reveal">
+          <div class="emoji">📡</div>
+          <h3>Post to every channel at once</h3>
+          <p>Connect as many YouTube channels as you own. Same video, all of them — review each individually or send it live in one tap.</p>
         </div>
-        <div class="feature">
-          <div class="ic">🗓️</div>
+        <div class="tile reveal">
+          <div class="emoji">🎯</div>
+          <h3>Ranks, not filler</h3>
+          <p>Titles &amp; tags reverse-engineered from the top-ranking videos for your topic — not generic AI mush.</p>
+        </div>
+        <div class="tile reveal">
+          <div class="emoji">🗓️</div>
           <h3>Schedule &amp; stagger</h3>
-          <p>Pick a publish time, or batch a whole Drive folder and space the uploads out automatically.</p>
+          <p>Batch a whole Drive folder and space the drops out automatically. Set it, forget it.</p>
         </div>
-        <div class="feature">
-          <div class="ic">🎯</div>
-          <h3>Real competitor research</h3>
-          <p>Titles and tags are built from the top-ranking videos for your topic — not generic AI filler.</p>
-        </div>
-        <div class="feature">
-          <div class="ic">🧩</div>
-          <h3>Your own AI keys</h3>
-          <p>Bring your own Gemini, Groq or Anthropic keys. You’re in control of the models and the costs.</p>
+        <div class="tile reveal">
+          <div class="emoji">🔐</div>
+          <h3>Yours, only yours</h3>
+          <p>Keys &amp; tokens are encrypted on your device. We literally can’t see them. That’s the whole point.</p>
         </div>
       </div>
     </section>
 
-    <section class="privacy-note">
-      <div class="wrap narrow">
-        <div class="lock">🔒</div>
-        <h2 style="font-family:var(--display);font-weight:600;">Your data stays yours.</h2>
-        <p>youtube_manager.ai runs locally on your device. It uploads to YouTube on your behalf using a connection you authorize, and it never transfers your videos, transcripts, API keys or YouTube tokens to our servers. We only keep the basics needed to run your account. <a href="/privacy">Read the full privacy policy →</a></p>
+    <!-- MULTI-CHANNEL SHOWCASE -->
+    <section class="sec wrap" id="channels">
+      <div class="showcase">
+        <div class="reveal from-l">
+          <div class="sec-head" style="margin-bottom:20px">
+            <div class="kicker">multi-channel</div>
+            <h2>Run five channels like it’s one.</h2>
+            <p>Pick your targets, hit go, and the same video lands on every YouTube channel — each with its own voice if you want it.</p>
+          </div>
+          <a class="btn btn-lime magnetic" href="#start">Connect your channels →</a>
+        </div>
+        <div class="chan-stack">
+          <div class="chan reveal from-r"><img class="pfp" src="/assets/shrimay.jpg" alt="Shrimay Somani" loading="lazy" /><div><b>Shrimay Somani</b><span>@shrimay_somani</span></div><span class="go">✓ live</span></div>
+          <div class="chan reveal from-r"><img class="pfp" src="/assets/delta.jpg" alt="Delta Education" loading="lazy" /><div><b>Delta Education</b><span>@DeltaEducation-18</span></div><span class="go">✓ live</span></div>
+          <div class="chan reveal from-r"><img class="pfp" src="/assets/clips.svg" alt="Clips &amp; Shorts" loading="lazy" /><div><b>Clips &amp; Shorts</b><span>@yourclips</span></div><span class="go">✓ live</span></div>
+          <div class="chan reveal from-r"><span class="pfp add" style="background:var(--tangerine)">＋</span><div><b>Add another…</b><span>as many as you own</span></div><span class="go">＋</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="privacy wrap" id="privacy-band">
+      <div class="box reveal">
+        <div class="shield" aria-hidden="true">🔒</div>
+        <div>
+          <span class="mini-badge">100% on-device</span>
+          <h2>Your data doesn’t leave your desk.</h2>
+          <p>Your videos, transcripts, API keys &amp; YouTube tokens are encrypted on your machine and never touch our servers. <a href="/privacy">Full privacy policy →</a></p>
+        </div>
+        <span class="corner" aria-hidden="true">🛡️</span>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-band wrap" id="start">
+      <div class="box reveal">
+        <span class="cta-sticker" aria-hidden="true">no cap 🧢</span>
+        <h2>Make the algorithm work for you.</h2>
+        <a class="btn btn-ghost magnetic" href="/privacy" style="font-size:17px">Get started →</a>
+        <span class="cta-emoji" aria-hidden="true">🚀</span>
       </div>
     </section>
   </main>
@@ -82,13 +167,48 @@
   <footer>
     <div class="wrap">
       <a class="brand" href="/"><span class="mark">▶</span> youtube_manager<b>.ai</b></a>
-      <span class="muted">© 2026 youtube_manager.ai</span>
+      <span class="muted">© <span id="yr">2026</span> youtube_manager.ai — made for creators</span>
       <nav class="links">
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
         <a href="mailto:support@youtube-manager.ai">Contact</a>
       </nav>
     </div>
   </footer>
+
+  <script>
+    // year
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // scroll reveal
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.14 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    // subtle tilt on bento tiles
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      document.querySelectorAll('.tile').forEach((t) => {
+        t.addEventListener('pointermove', (ev) => {
+          const r = t.getBoundingClientRect();
+          const px = (ev.clientX - r.left) / r.width - 0.5;
+          const py = (ev.clientY - r.top) / r.height - 0.5;
+          t.style.setProperty('--ry', (px * 6).toFixed(2) + 'deg');
+          t.style.setProperty('--rx', (-py * 6).toFixed(2) + 'deg');
+        });
+        t.addEventListener('pointerleave', () => { t.style.setProperty('--rx', '0deg'); t.style.setProperty('--ry', '0deg'); });
+      });
+
+      // magnetic buttons
+      document.querySelectorAll('.magnetic').forEach((b) => {
+        b.addEventListener('pointermove', (ev) => {
+          const r = b.getBoundingClientRect();
+          b.style.transform = `translate(${((ev.clientX - r.left) / r.width - 0.5) * 10}px, ${((ev.clientY - r.top) / r.height - 0.5) * 10}px)`;
+        });
+        b.addEventListener('pointerleave', () => { b.style.transform = ''; });
+      });
+    }
+  </script>
 </body>
 </html>

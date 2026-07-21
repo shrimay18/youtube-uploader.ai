@@ -36,6 +36,15 @@ def _parse(ts: str) -> datetime | None:
         return None
 
 
+def feedback(limit: int = 500) -> list:
+    """All submitted feedback, newest first (admin only, via the service key)."""
+    return _get("feedback", {
+        "select": "id,created_at,anonymous,rating,name,email,mobile,message,user_id",
+        "order": "created_at.desc",
+        "limit": str(limit),
+    })
+
+
 def stats() -> dict:
     """Aggregate signups + usage for the admin dashboard."""
     profiles = _get("profiles", {
@@ -85,7 +94,7 @@ def stats() -> dict:
     for p in profiles:
         uid = p.get("id", "")
         users.append({
-            "email": p.get("email") or "—",
+            "email": p.get("email") or "-",
             "name": p.get("name") or "",
             "created_at": p.get("created_at"),
             "last_active": p.get("last_active"),

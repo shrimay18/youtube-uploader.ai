@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
 
 function fmtDate(s) {
-  if (!s) return '—'
+  if (!s) return '-'
   const d = new Date(s)
-  if (isNaN(d)) return '—'
+  if (isNaN(d)) return '-'
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 function fmtAgo(s) {
-  if (!s) return '—'
+  if (!s) return '-'
   const d = new Date(s)
-  if (isNaN(d)) return '—'
+  if (isNaN(d)) return '-'
   const mins = Math.floor((Date.now() - d.getTime()) / 60000)
   if (mins < 1) return 'just now'
   if (mins < 60) return `${mins}m ago`
@@ -21,12 +21,16 @@ function fmtAgo(s) {
   return `${days}d ago`
 }
 
+const MOOD = { 1: '😞', 2: '😕', 3: '😐', 4: '😊', 5: '🤩' }
+
 export default function AdminModal({ onClose }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [reviews, setReviews] = useState(null)
 
   useEffect(() => {
     api.adminStats().then(setData).catch((e) => setError(e.message))
+    api.adminFeedback().then((r) => setReviews(r.feedback || [])).catch(() => setReviews([]))
   }, [])
 
   const t = data?.totals
@@ -58,7 +62,7 @@ export default function AdminModal({ onClose }) {
             </div>
 
             <div className="admin-section">
-              <div className="admin-section-title">Activity — last 14 days</div>
+              <div className="admin-section-title">Activity · last 14 days</div>
               <div className="chart">
                 {data.series_14d.map((d) => (
                   <div className="chart-col" key={d.day} title={`${d.day}: ${d.count}`}>
@@ -97,6 +101,36 @@ export default function AdminModal({ onClose }) {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            <div className="admin-section">
+              <div className="admin-section-title">Feedback ({reviews ? reviews.length : '…'})</div>
+              {!reviews && <div className="stage-line"><div className="spinner" /><span>Loading…</span></div>}
+              {reviews && reviews.length === 0 && (
+                <div className="muted" style={{ padding: '10px 2px' }}>No feedback yet.</div>
+              )}
+              {reviews && reviews.length > 0 && (
+                <div className="fb-list">
+                  {reviews.map((r) => (
+                    <div className="fb-item" key={r.id}>
+                      <div className="fb-item-top">
+                        {r.rating ? <span className="fb-item-mood">{MOOD[r.rating] || ''}</span> : null}
+                        <span className="fb-item-who">
+                          {r.anonymous ? 'Anonymous' : (r.name || r.email || 'User')}
+                        </span>
+                        <span className="fb-item-date">{fmtDate(r.created_at)}</span>
+                      </div>
+                      <div className="fb-item-msg">{r.message}</div>
+                      {!r.anonymous && (r.email || r.mobile) && (
+                        <div className="fb-item-contact">
+                          {r.email && <span>✉ {r.email}</span>}
+                          {r.mobile && <span>📞 {r.mobile}</span>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}

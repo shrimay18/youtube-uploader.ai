@@ -50,6 +50,27 @@ export async function signOut() {
   if (sb) await sb.auth.signOut().catch(() => {})
 }
 
+// Submit feedback / a review. Works for anonymous visitors and signed-in users
+// (RLS allows inserts from both). Throws on failure so the modal can show it.
+export async function submitFeedback({ anonymous, rating, name, email, mobile, message }) {
+  const sb = await getSupabase()
+  if (!sb) throw new Error('Feedback isn’t available on this install yet.')
+  let uid = null
+  try { const { data } = await sb.auth.getSession(); uid = data.session?.user?.id || null } catch {}
+  const clean = (v) => (v || '').trim() || null
+  const row = {
+    anonymous: !!anonymous,
+    rating: rating || null,
+    message: (message || '').trim(),
+    name: anonymous ? null : clean(name),
+    email: anonymous ? null : clean(email),
+    mobile: anonymous ? null : clean(mobile),
+    user_id: anonymous ? null : uid,
+  }
+  const { error } = await sb.from('feedback').insert(row)
+  if (error) throw new Error(error.message || 'Could not send feedback.')
+}
+
 // Fire-and-forget telemetry. Metadata only — never content or keys. RLS ensures a
 // user can only write their own rows.
 export async function logEvent(type, extra = {}) {

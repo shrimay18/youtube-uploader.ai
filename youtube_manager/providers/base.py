@@ -40,6 +40,35 @@ class LLMProvider(ABC):
             return extract_json(retry)
 
 
+class KeyedProvider(LLMProvider):
+    """An LLM provider that holds one or more API keys and rotates through them on
+    quota/auth failure — so a user can add several keys per provider for headroom."""
+
+    def __init__(self, cfg: dict | None = None, keys: list | None = None):
+        self.cfg = cfg or {}
+        self.keys = [k for k in (keys or []) if k]
+
+    def _call(self, key: str, system: str, user: str) -> str:
+        raise NotImplementedError
+
+    def complete(self, system: str, user: str) -> str:
+        if not self.keys:
+            raise RuntimeError(f"No API key set for {self.name}.")
+        errs = []
+        for i, key in enumerate(self.keys):
+            try:
+                return self._call(key, system, user)
+            except QuotaExceeded as e:
+                errs.append(f"key {i + 1}: {e}")
+                continue                      # this key is spent — try the next
+            except Exception as e:
+                errs.append(f"key {i + 1}: {e}")
+                if i < len(self.keys) - 1:
+                    continue                  # bad/invalid key — try the next
+                raise
+        raise QuotaExceeded(f"{self.name}: all {len(self.keys)} key(s) exhausted -> " + " | ".join(errs[-3:]))
+
+
 def extract_json(text: str) -> dict:
     """Best-effort: pull the first JSON object out of a model reply."""
     text = text.strip()

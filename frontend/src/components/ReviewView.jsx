@@ -72,7 +72,7 @@ export default function ReviewView({ slug, targetAccounts = [], onManageAccounts
   async function publishAll() {
     if (!targetAccounts.length) { setFlash({ t: 'bad', m: 'Select at least one channel to publish to.' }); return }
     const names = targetAccounts.map((a) => a.title).join(', ')
-    if (!confirm(`Publish this to ${targetAccounts.length} channel(s) — ${names} — with your current edits?`)) return
+    if (!confirm(`Publish this to ${targetAccounts.length} channel(s) (${names}) with your current edits?`)) return
     setFlash(null)
     try {
       await api.saveDraft(slug, patch())        // lock in edits before publishing to all
@@ -195,7 +195,7 @@ export default function ReviewView({ slug, targetAccounts = [], onManageAccounts
         <label className="switch">
           <input type="checkbox" checked={!!d.made_for_kids} onChange={(e) => set('made_for_kids', e.target.checked)} />
           <span className="track" />
-          Made for kids (COPPA) — leave off unless child-directed
+          Made for kids (COPPA). Leave off unless child-directed
         </label>
         <div style={{ marginTop: 14, maxWidth: 200 }}>
           <label className="field">Audio language</label>

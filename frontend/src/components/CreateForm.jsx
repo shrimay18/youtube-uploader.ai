@@ -19,12 +19,14 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
   const [drag, setDrag] = useState(false)
   const [pub, setPub] = useState('review') // review | private | schedule | now
   const [schedAt, setSchedAt] = useState('')
-  const [fixed, setFixed] = useFixed()
+  const [fixed, setFixed, fixedSaved] = useFixed()
 
   const videoInput = useRef()
   const thumbInput = useRef()
 
   const toggle = (id) => setSelected((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id])
+  const allSelected = accounts.length > 0 && selected.length === accounts.length
+  const toggleAll = () => setSelected(allSelected ? [] : accounts.map((a) => a.id))
   const voiceId = selected[0]
   const voice = accounts.find((a) => a.id === voiceId)
   const canGo = selected.length && (source === 'drive' ? driveLink.trim() : videoFile)
@@ -53,10 +55,10 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
   return (
     <div>
       <h1 className="hero-title">New upload</h1>
-      <p className="hero-sub">Drop a video or paste a Drive link — youtube_manager writes the title, description, tags &amp; thumbnail.</p>
+      <p className="hero-sub">Drop a video or paste a Drive link, and youtube_manager writes the title, description, tags &amp; thumbnail.</p>
 
       <div className="card">
-        <div className="card-title"><span className="dot" />Publish to <span className="muted" style={{ textTransform: 'none', letterSpacing: 0, marginLeft: 6, fontWeight: 400 }}>— pick one or more channels</span></div>
+        <div className="card-title"><span className="dot" />Publish to <span className="muted" style={{ textTransform: 'none', letterSpacing: 0, marginLeft: 6, fontWeight: 400 }}>· pick one or more channels</span></div>
         {accounts.length === 0 ? (
           <div className="empty-cta">
             <div>No YouTube channels connected yet.</div>
@@ -65,6 +67,13 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
         ) : (
           <>
             <div className="chips">
+              {accounts.length > 1 && (
+                <div className={'chip selectall' + (allSelected ? ' on' : '')} onClick={toggleAll}>
+                  <span className="chk">{allSelected ? '✓' : ''}</span>
+                  <div className="avatar all">★</div>
+                  <div className="meta"><b>All channels</b><span>{allSelected ? 'all selected' : `${accounts.length} channels`}</span></div>
+                </div>
+              )}
               {accounts.map((a) => (
                 <div key={a.id} className={'chip' + (selected.includes(a.id) ? ' on' : '')} onClick={() => toggle(a.id)}>
                   <span className="chk">{selected.includes(a.id) ? '✓' : ''}</span>
@@ -107,10 +116,10 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
 
       <div className="card">
         <div className="card-title"><span className="dot" />Publishing</div>
-        <div className="hint" style={{ marginTop: 0, marginBottom: 10 }}>Choose upfront — nothing is uploaded until you say so.</div>
+        <div className="hint" style={{ marginTop: 0, marginBottom: 10 }}>Choose upfront. Nothing is uploaded until you say so.</div>
         <div className="pubgrid">
           <button className={'puboption' + (pub === 'review' ? ' on' : '')} onClick={() => setPub('review')}>
-            <b>👀 Review first</b><span>Show me the draft — don’t upload yet</span>
+            <b>👀 Review first</b><span>Show me the draft, don’t upload yet</span>
           </button>
           <button className={'puboption' + (pub === 'schedule' ? ' on' : '')} onClick={() => setPub('schedule')}>
             <b>🗓️ Schedule</b><span>Auto-upload at a time I pick</span>
@@ -139,7 +148,7 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
           <button className={kind === 'long' ? 'on' : ''} onClick={() => setKind('long')}>Long-form</button>
         </div>
         <div className="divider" />
-        <label className="field">Thumbnail <span className="muted" style={{ fontWeight: 400 }}>— optional</span></label>
+        <label className="field">Thumbnail <span className="muted" style={{ fontWeight: 400 }}>· optional</span></label>
         <div className="row">
           <div><button className="btn btn-ghost btn-block" onClick={() => thumbInput.current?.click()}>{thumbFile ? thumbFile.name : 'Upload thumbnail image'}</button>
             <input ref={thumbInput} type="file" accept="image/*" hidden onChange={(e) => setThumbFile(e.target.files?.[0] || null)} /></div>
@@ -147,11 +156,11 @@ export default function CreateForm({ accounts = [], onManageAccounts, onGenerate
         </div>
       </div>
 
-      <FixedContent fixed={fixed} onChange={setFixed} />
+      <FixedContent fixed={fixed} onChange={setFixed} saved={fixedSaved} />
 
       <div className="sticky-bar">
         <button className="btn btn-primary btn-lg" disabled={!canGo} onClick={submit}>✨ Generate draft</button>
-        <span className="muted">{pub === 'review' ? 'You’ll review the draft before anything is uploaded.' : 'Runs in the background — add more videos with the + tab.'}</span>
+        <span className="muted">{pub === 'review' ? 'You’ll review the draft before anything is uploaded.' : 'Runs in the background. Add more videos with the + tab.'}</span>
       </div>
     </div>
   )

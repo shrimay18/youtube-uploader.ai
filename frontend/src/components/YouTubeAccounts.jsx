@@ -34,7 +34,7 @@ export default function YouTubeAccounts({ onClose, onChanged }) {
   }
 
   async function remove(a) {
-    if (!confirm(`Disconnect “${a.title}”? It stays on YouTube — this only removes it from youtube_manager.`)) return
+    if (!confirm(`Disconnect “${a.title}”? It stays on YouTube. This only removes it from youtube_manager.`)) return
     await api.ytRemove(a.id).catch(() => {})
     await load(); onChanged?.()
   }
@@ -89,13 +89,14 @@ export default function YouTubeAccounts({ onClose, onChanged }) {
         {showSteps && (
           <div className="how-panel" style={{ marginLeft: 0 }}>
             <ol className="how-steps">
-              <li>Click <b>Connect a YouTube account</b> — a Google window opens.</li>
-              <li>Pick the Google account (or <b>Brand Account</b>) that owns the channel you want to add.</li>
-              <li>Approve the YouTube permission so youtube_manager can upload on your behalf.</li>
-              <li>You’ll bounce back here and the channel appears in the list.</li>
-              <li>Repeat to add more channels. Each one is stored encrypted on this device.</li>
+              <li><span className="how-n">1</span><span>Click <b>Connect a YouTube account</b>. A Google window opens.</span></li>
+              <li><span className="how-n">2</span><span>Pick the Google account (or <b>Brand Account</b>) that owns the channel you want to add.</span></li>
+              <li><span className="how-n">3</span><span>If Google shows a <b>“this app isn’t verified”</b> screen, click <b>Advanced</b>, then <b>“Go to youtube_manager.ai (unsafe)”</b>. It’s safe; verification is in progress and your data stays on your device.</span></li>
+              <li><span className="how-n">4</span><span>Approve the YouTube permission so youtube_manager can upload on your behalf.</span></li>
+              <li><span className="how-n">5</span><span>You’ll bounce back here and the channel appears in the list.</span></li>
+              <li><span className="how-n">6</span><span>Repeat to add more channels. Each one is stored encrypted on this device.</span></li>
             </ol>
-            <div className="how-note">💡 To add a second channel under the same Google login, the picker lets you choose a different Brand Account. Use “Use another account” for a different Google login entirely.</div>
+            <div className="how-note">To add a second channel under the same Google login, the picker lets you choose a different Brand Account. Use “Use another account” for a different Google login entirely.</div>
           </div>
         )}
       </div>

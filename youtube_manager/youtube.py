@@ -219,7 +219,7 @@ def upload(draft: dict, timezone: str = "Asia/Kolkata", progress=print,
             set_thumbnail(service, video_id, Path(thumb))
             if is_short:
                 progress("Thumbnail set (16:9, for search/suggested). NOTE: the vertical "
-                         "Shorts-feed cover can't be set via API — set it in YouTube Studio "
+                         "Shorts-feed cover can't be set via API. Set it in YouTube Studio "
                          f"-> Edit -> Thumbnail. Image: {thumb}")
             else:
                 progress("Thumbnail set.")
@@ -233,13 +233,13 @@ def upload(draft: dict, timezone: str = "Asia/Kolkata", progress=print,
             progress("Pinned comment posted.")
         except Exception as e:
             reason = "comments can't be posted on a PRIVATE video" if "403" in str(e) else str(e)
-            progress(f"  (pinned comment not posted: {reason} — text saved in the draft; "
+            progress(f"  (pinned comment not posted: {reason}; text saved in the draft, "
                      "post it once the video is public)")
 
     if "publishAt" in status:
         progress(f"Scheduled to go public at {draft['publish_at']} ({timezone}).")
     elif status["privacyStatus"] in ("private", "unlisted"):
-        progress(f"Left as {status['privacyStatus']} — publish it manually in YouTube Studio when ready.")
+        progress(f"Left as {status['privacyStatus']}. Publish it manually in YouTube Studio when ready.")
     return video_id
 
 

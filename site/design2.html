@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>youtube_manager.ai — concept B (neon night)</title>
+<style>
+  :root{
+    --bg:#07070d; --bg2:#0c0b16; --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.07);
+    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+    --tx:#f4f3fb; --dim:#a2a1b8; --faint:#6d6c82;
+    --lime:#b6ff3c; --cyan:#3ce8ff; --mag:#ff45c8; --violet:#9a6bff; --yt:#ff2d55;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+    --sp:clamp(16px,4.6vw,22px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{scroll-behavior:smooth;overflow-x:clip;}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--font);line-height:1.55;overflow-x:clip;
+    -webkit-font-smoothing:antialiased;}
+  /* animated aurora */
+  body::before{content:"";position:fixed;inset:-30%;z-index:-2;pointer-events:none;
+    background:
+      radial-gradient(30% 30% at 20% 12%,color-mix(in srgb,var(--violet) 60%,transparent),transparent 70%),
+      radial-gradient(28% 28% at 82% 18%,color-mix(in srgb,var(--cyan) 45%,transparent),transparent 70%),
+      radial-gradient(34% 34% at 70% 82%,color-mix(in srgb,var(--mag) 42%,transparent),transparent 70%),
+      radial-gradient(26% 26% at 12% 78%,color-mix(in srgb,var(--lime) 34%,transparent),transparent 70%);
+    filter:blur(60px);opacity:.7;animation:aurora 18s ease-in-out infinite alternate;}
+  body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");}
+  @keyframes aurora{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-3%,2%,0) scale(1.12)}100%{transform:translate3d(3%,-2%,0) scale(1.05)}}
+  a{color:inherit;text-decoration:none}
+  .wrap{width:100%;max-width:1040px;margin:0 auto;padding:0 var(--sp);}
+
+  /* nav */
+  .nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 62%,transparent);
+    border-bottom:1px solid var(--line);}
+  .nav .row{display:flex;align-items:center;gap:12px;height:60px;}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.4px;font-size:16px;}
+  .logo .m{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;color:#fff;
+    background:linear-gradient(135deg,var(--yt),var(--mag));box-shadow:0 0 18px color-mix(in srgb,var(--mag) 60%,transparent);}
+  .logo b{background:linear-gradient(90deg,var(--cyan),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .pill-cta{margin-left:auto;font-weight:700;font-size:13.5px;padding:9px 16px;border-radius:999px;color:#04120a;
+    background:linear-gradient(90deg,var(--lime),var(--cyan));box-shadow:0 0 22px color-mix(in srgb,var(--lime) 45%,transparent);}
+  .pill-cta:active{transform:translateY(1px)}
+
+  /* hero */
+  .hero{padding:34px 0 10px;text-align:center;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--dim);
+    border:1px solid var(--line2);background:var(--card);border-radius:999px;padding:7px 14px;}
+  .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);}
+  h1{font-size:clamp(34px,10.5vw,64px);line-height:1.02;letter-spacing:-1.6px;font-weight:800;margin:20px 0 14px;}
+  h1 .g{background:linear-gradient(100deg,var(--violet),var(--cyan) 45%,var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{color:var(--dim);font-size:clamp(15px,4vw,18px);max-width:540px;margin:0 auto 22px;}
+  .cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:16px;
+    padding:15px 26px;border-radius:15px;color:#04120a;background:linear-gradient(90deg,var(--lime),var(--cyan));
+    box-shadow:0 0 30px color-mix(in srgb,var(--lime) 40%,transparent);}
+  .cta.ghost{color:var(--tx);background:var(--card2);border:1px solid var(--line2);box-shadow:none;}
+  .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .microcopy{margin-top:14px;font-size:12.5px;color:var(--faint);}
+
+  /* phone mock */
+  .stage{position:relative;display:flex;justify-content:center;margin:30px 0 8px;}
+  .stage .halo{position:absolute;width:340px;height:340px;top:6%;border-radius:50%;
+    background:radial-gradient(circle,color-mix(in srgb,var(--violet) 55%,transparent),transparent 62%);filter:blur(20px);z-index:0;}
+  .phone{position:relative;z-index:1;width:min(300px,80vw);border-radius:38px;padding:11px;
+    background:linear-gradient(160deg,#1b1930,#0f0e1b);border:1px solid var(--line2);
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;}
+  .notch{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:98px;height:20px;border-radius:0 0 14px 14px;background:#000;z-index:3;}
+  .screen{border-radius:28px;overflow:hidden;background:#0b0a14;border:1px solid var(--line);}
+  .sc-top{padding:26px 16px 12px;}
+  .sc-thumb{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;border:1px solid var(--line2);
+    background:linear-gradient(135deg,#2a1c46,#3a1f52 55%,#4a2140);display:grid;place-items:center;}
+  .sc-thumb .glow{position:absolute;inset:0;background:radial-gradient(45% 60% at 30% 30%,color-mix(in srgb,var(--cyan) 55%,transparent),transparent 70%),radial-gradient(50% 60% at 78% 78%,color-mix(in srgb,var(--mag) 55%,transparent),transparent 70%);}
+  .sc-play{position:relative;width:52px;height:38px;border-radius:11px;background:var(--yt);display:grid;place-items:center;box-shadow:0 0 24px color-mix(in srgb,var(--yt) 60%,transparent);}
+  .sc-play::after{content:"";border-left:14px solid #fff;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:3px;}
+  .sc-badge{position:absolute;left:8px;top:8px;font-size:10px;font-weight:800;color:#04120a;background:linear-gradient(90deg,var(--lime),var(--cyan));padding:3px 8px;border-radius:999px;}
+  .sc-title{font-weight:700;font-size:14px;letter-spacing:-.2px;margin:14px 2px 10px;line-height:1.25;}
+  .typing{border-right:2px solid var(--lime);white-space:nowrap;overflow:hidden;display:inline-block;max-width:100%;
+    animation:type 3.6s steps(38) infinite,blink .7s step-end infinite;}
+  @keyframes type{0%{width:0}55%,100%{width:16.5em}}
+  @keyframes blink{50%{border-color:transparent}}
+  .sc-tags{display:flex;flex-wrap:wrap;gap:5px;margin:0 2px;}
+  .sc-tags span{font-size:10px;font-weight:600;color:var(--dim);border:1px solid var(--line2);border-radius:999px;padding:3px 8px;}
+  .sc-pub{margin:14px 0 8px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#04120a;
+    background:linear-gradient(90deg,var(--lime),var(--cyan));border-radius:11px;padding:11px 12px;justify-content:center;box-shadow:0 0 22px color-mix(in srgb,var(--lime) 35%,transparent);}
+  .sc-chips{display:flex;gap:-8px;padding:12px 0 20px;justify-content:center;}
+  .sc-chips i{width:26px;height:26px;border-radius:50%;border:2px solid #0b0a14;margin-left:-8px;display:block;}
+
+  /* sections */
+  section{padding:52px 0 6px;}
+  .kick{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+    background:linear-gradient(90deg,var(--cyan),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  h2{font-size:clamp(26px,7vw,40px);line-height:1.05;letter-spacing:-1px;font-weight:800;margin:8px 0 8px;}
+  .lead{color:var(--dim);font-size:15.5px;max-width:560px;}
+
+  /* steps */
+  .steps{display:grid;gap:14px;margin-top:24px;}
+  .step{position:relative;display:flex;gap:15px;align-items:flex-start;padding:18px;border-radius:20px;
+    background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);overflow:hidden;}
+  .step .n{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#04120a;}
+  .step:nth-child(1) .n{background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;box-shadow:0 0 20px color-mix(in srgb,var(--violet) 55%,transparent);}
+  .step:nth-child(2) .n{background:linear-gradient(135deg,var(--cyan),var(--lime));box-shadow:0 0 20px color-mix(in srgb,var(--cyan) 50%,transparent);}
+  .step:nth-child(3) .n{background:linear-gradient(135deg,var(--lime),var(--mag));box-shadow:0 0 20px color-mix(in srgb,var(--mag) 50%,transparent);}
+  .step h3{margin:0 0 4px;font-size:17px;letter-spacing:-.3px;}
+  .step p{margin:0;color:var(--dim);font-size:14px;}
+
+  /* feature glass cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px;}
+  .glass{padding:18px;border-radius:20px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);}
+  .glass .ic{font-size:24px;margin-bottom:10px;filter:drop-shadow(0 0 10px rgba(255,255,255,.15));}
+  .glass h3{margin:0 0 5px;font-size:15px;letter-spacing:-.2px;}
+  .glass p{margin:0;color:var(--dim);font-size:13px;}
+  .glass.wide{grid-column:1 / -1;}
+
+  /* channels */
+  .chans{display:flex;flex-direction:column;gap:10px;margin-top:22px;}
+  .chan{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--card);border:1px solid var(--line);}
+  .chan img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--line2);}
+  .chan .fb{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#04120a;}
+  .chan b{font-size:14px;display:block;} .chan span{font-size:11.5px;color:var(--faint);}
+  .chan .live{margin-left:auto;font-size:11px;font-weight:800;color:#04120a;background:linear-gradient(90deg,var(--lime),var(--cyan));padding:5px 11px;border-radius:999px;}
+
+  /* privacy + cta */
+  .privacy{margin-top:30px;padding:24px;border-radius:22px;border:1px solid var(--line2);
+    background:linear-gradient(160deg,color-mix(in srgb,var(--violet) 16%,var(--card)),var(--card));
+    display:flex;gap:16px;align-items:center;}
+  .privacy .lk{flex:none;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:26px;
+    background:radial-gradient(circle,color-mix(in srgb,var(--lime) 40%,transparent),transparent 70%);border:1px solid var(--line2);}
+  .privacy h3{margin:0 0 5px;font-size:17px;} .privacy p{margin:0;color:var(--dim);font-size:13.5px;}
+
+  .bigcta{margin:44px 0 30px;text-align:center;padding:44px 22px;border-radius:26px;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,var(--violet),var(--mag) 50%,var(--yt));background-size:200% 200%;animation:shift 9s ease infinite;
+    box-shadow:0 0 60px color-mix(in srgb,var(--mag) 30%,transparent);}
+  @keyframes shift{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+  .bigcta h2{color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.35);margin:0 0 18px;}
+  .bigcta .cta{background:#0a0a12;color:var(--lime);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 120px;color:var(--faint);font-size:12.5px;text-align:center;}
+
+  /* sticky mobile CTA bar */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px var(--sp) calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,var(--bg),color-mix(in srgb,var(--bg) 30%,transparent));backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;}
+  .dock .cta{flex:1;}
+  .dock small{display:none;}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1);}
+  .rv.in{opacity:1;transform:none;}
+
+  /* desktop niceties */
+  @media(min-width:820px){
+    .hero{padding:56px 0 10px;}
+    .heroflex{display:flex;align-items:center;gap:40px;text-align:left;}
+    .heroflex .col{flex:1;} .heroflex .cta-row{justify-content:flex-start;} .heroflex .sub{margin-left:0;}
+    .heroflex h1{font-size:clamp(46px,4.4vw,66px);}
+    .stage{margin:0;} .halo{top:-4%!important;}
+    .grid{grid-template-columns:repeat(3,1fr);}
+    .steps{grid-template-columns:repeat(3,1fr);}
+    .dock{display:none;}
+    footer{padding-bottom:40px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    body::before,.bigcta,.typing{animation:none!important}
+    .typing{border-right:0;max-width:none;white-space:normal}
+    .rv{opacity:1;transform:none;transition:none}
+  }
+</style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap row">
+      <a class="logo" href="#"><span class="m">▶</span> youtube_manager<b>.ai</b></a>
+      <a class="pill-cta" href="#start">Start free</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" id="top">
+      <div class="heroflex">
+        <div class="col rv">
+          <span class="eyebrow"><span class="dot"></span> mobile-first · creator-built</span>
+          <h1>Your video,<br><span class="g">famous by tonight.</span></h1>
+          <p class="sub">Drop a clip and youtube_manager.ai writes the title, tags, chapters &amp; thumbnail — then fires it to every channel you own. Right from your phone. 🔥</p>
+          <div class="cta-row">
+            <a class="cta" href="#start">Start free →</a>
+            <a class="cta ghost" href="#how">How it works</a>
+          </div>
+          <div class="microcopy">no card • your own AI keys • runs on your device</div>
+        </div>
+
+        <div class="col stage rv">
+          <div class="halo"></div>
+          <div class="phone">
+            <div class="notch"></div>
+            <div class="screen">
+              <div class="sc-top">
+                <div class="sc-thumb"><div class="glow"></div><div class="sc-play"></div><span class="sc-badge">✨ auto</span></div>
+                <div class="sc-title"><span class="typing">I Tried Every Hostel in Manali 🏔️</span></div>
+                <div class="sc-tags"><span>hostel life</span><span>manali</span><span>budget trip</span><span>honest</span></div>
+                <div class="sc-pub">Publish to 3 channels ▶</div>
+                <div class="sc-chips">
+                  <i style="background:linear-gradient(135deg,#9a6bff,#3ce8ff)"></i>
+                  <i style="background:linear-gradient(135deg,#ff45c8,#ff2d55)"></i>
+                  <i style="background:linear-gradient(135deg,#b6ff3c,#3ce8ff)"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <span class="kick">three taps</span>
+      <h2 class="rv">From clip to published.</h2>
+      <div class="steps">
+        <div class="step rv"><div class="n">1</div><div><h3>Drop it</h3><p>Paste a Drive link or upload a video — any length, phone or desktop.</p></div></div>
+        <div class="step rv"><div class="n">2</div><div><h3>We cook</h3><p>Full transcription → SEO title, description, tags, chapters &amp; a thumbnail tuned to what ranks.</p></div></div>
+        <div class="step rv"><div class="n">3</div><div><h3>Blast it</h3><p>Publish or schedule to all your channels at once — review each or send it live.</p></div></div>
+      </div>
+    </section>
+
+    <section>
+      <span class="kick">the toolkit</span>
+      <h2 class="rv">Everything, done for you.</h2>
+      <div class="grid">
+        <div class="glass wide rv"><div class="ic">🎯</div><h3>Ranks, not filler</h3><p>Titles &amp; tags reverse-engineered from the top-ranking videos in your niche — never generic AI mush.</p></div>
+        <div class="glass rv"><div class="ic">📡</div><h3>Every channel</h3><p>Connect unlimited channels, post to all at once.</p></div>
+        <div class="glass rv"><div class="ic">🗓️</div><h3>Schedule</h3><p>Batch a folder, stagger the drops automatically.</p></div>
+        <div class="glass rv"><div class="ic">🔐</div><h3>On-device</h3><p>Keys &amp; tokens encrypted on your phone.</p></div>
+        <div class="glass rv"><div class="ic">🧩</div><h3>Your AI</h3><p>Bring your Gemini, Groq or Claude keys.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <span class="kick">multi-channel</span>
+      <h2 class="rv">Run them all like one.</h2>
+      <div class="chans">
+        <div class="chan rv"><img src="/assets/shrimay.jpg" alt=""><div><b>Shrimay Somani</b><span>@shrimay_somani</span></div><span class="live">✓ live</span></div>
+        <div class="chan rv"><img src="/assets/delta.jpg" alt=""><div><b>Delta Education</b><span>@DeltaEducation-18</span></div><span class="live">✓ live</span></div>
+        <div class="chan rv"><span class="fb" style="background:linear-gradient(135deg,#3ce8ff,#9a6bff)">C</span><div><b>Clips &amp; Shorts</b><span>@yourclips</span></div><span class="live">✓ live</span></div>
+      </div>
+      <div class="privacy rv">
+        <div class="lk">🔒</div>
+        <div><h3>Your data never leaves your phone.</h3><p>Videos, keys and tokens are encrypted on-device and never touch our servers.</p></div>
+      </div>
+    </section>
+
+    <section id="start">
+      <div class="bigcta rv">
+        <h2>Make the algorithm work for you.</h2>
+        <a class="cta" href="#top">Start free →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>© <span id="yr">2026</span> youtube_manager.ai — concept B · made for creators</footer>
+
+  <div class="dock">
+    <a class="cta" href="#start">Start free →</a>
+  </div>
+
+  <script>
+    document.getElementById('yr').textContent=new Date().getFullYear();
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
+    document.querySelectorAll('.rv').forEach(function(n){io.observe(n);});
+  </script>
+</body>
+</html>

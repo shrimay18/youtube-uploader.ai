@@ -27,6 +27,11 @@ google-api-python-client>=2.120.0
 google-auth-oauthlib>=1.2.0
 google-auth-httplib2>=0.2.0
 
+# --- Auth & encrypted local vault ---
+cryptography>=42.0          # Fernet encryption of the on-device key vault
+keyring>=25.0               # OS keychain storage of the vault key (Google accounts)
+PyJWT[crypto]>=2.8          # verify Supabase access tokens (hosted Google sign-in)
+
 # --- Misc ---
 PyYAML>=6.0.1               # config + draft.yaml
 Jinja2>=3.1.3              # HTML preview rendering

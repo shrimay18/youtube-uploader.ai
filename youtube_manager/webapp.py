@@ -61,6 +61,18 @@ def _log(jid: str):
     return cb
 
 
+def _purge_dir(d: Path) -> None:
+    """Delete everything inside a directory (keep the directory itself)."""
+    import shutil
+    if not d.exists():
+        return
+    for entry in d.iterdir():
+        try:
+            shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
+        except OSError:
+            pass
+
+
 def _draft_path(slug: str) -> Path:
     return config.paths().drafts / f"{slug}.yaml"
 
@@ -128,6 +140,16 @@ def create_app():
         except Exception as e:
             return jsonify({"error": f"Could not load stats: {str(e)[:160]}"}), 502
 
+    @app.get("/api/admin/feedback")
+    def admin_feedback():
+        if not config.is_admin(vault.account_email()):
+            return jsonify({"error": "Not authorized."}), 403
+        from . import admin
+        try:
+            return jsonify({"feedback": admin.feedback()})
+        except Exception as e:
+            return jsonify({"error": f"Could not load feedback: {str(e)[:160]}"}), 502
+
     @app.post("/api/auth/supabase")
     def auth_supabase():
         """Verify a Supabase access token, then unlock/create the local vault."""
@@ -154,7 +176,7 @@ def create_app():
     @app.get("/api/auth/env-detected")
     def env_detected():
         import os
-        return jsonify({k: bool(os.environ.get(k)) for k in vault.KEY_FIELDS})
+        return jsonify({p: bool(os.environ.get(vault.ENV_MAP[p])) for p in vault.PROVIDERS})
 
     @app.post("/api/auth/login")
     def auth_login():
@@ -170,20 +192,54 @@ def create_app():
 
     @app.post("/api/auth/reset")
     def auth_reset():
-        vault.reset()
+        """Wipe EVERYTHING stored on this device so it's a brand-new account:
+        API keys (vault + OS keychain), connected YouTube channels, the fixed
+        description/pinned comment, and all generated drafts + downloaded videos."""
+        from . import accounts
+        from . import fixed as fixed_store
+        vault.reset()             # API keys: account.json + keyring vault key + env
+        accounts.purge()          # connected YouTube channels
+        fixed_store.purge()       # fixed description + pinned comment
+        p = config.paths()
+        _purge_dir(p.drafts)      # generated drafts (+ their thumbnails)
+        _purge_dir(p.downloads)   # uploaded/downloaded source videos + thumbs
         return jsonify({"ok": True})
 
     @app.get("/api/settings/keys")
     def get_keys():
-        return jsonify(vault.masked_keys())
+        return jsonify(vault.masked_config())
 
     @app.post("/api/settings/keys")
     def set_keys():
+        b = request.get_json(force=True) or {}
         try:
-            vault.update_keys(request.get_json(force=True) or {})
+            vault.save_config(order=b.get("order"), youtube=b.get("youtube"),
+                              llm_ops=b.get("llm") or {}, custom=b.get("custom"))
         except PermissionError as e:
             return jsonify({"error": str(e)}), 401
+        except Exception as e:
+            return jsonify({"error": f"Couldn't save keys: {str(e)[:160]}"}), 400
         return jsonify({"ok": True})
+
+    # ---- Fixed description + pinned comment (set once, applied to every upload) ----
+    @app.get("/api/settings/fixed")
+    def get_fixed():
+        from . import fixed
+        try:
+            return jsonify(fixed.get())
+        except PermissionError:
+            return jsonify({"error": "auth required"}), 401
+
+    @app.post("/api/settings/fixed")
+    def set_fixed():
+        from . import fixed
+        b = request.get_json(force=True) or {}
+        try:
+            return jsonify(fixed.save(b))
+        except PermissionError as e:
+            return jsonify({"error": str(e)}), 401
+        except Exception as e:
+            return jsonify({"error": f"Couldn't save fixed content: {str(e)[:160]}"}), 400
 
     # ---- Connected YouTube accounts (publish targets) ----
     @app.get("/api/youtube/accounts")
@@ -336,10 +392,14 @@ def create_app():
         if force_kind not in ("short", "long"):
             force_kind = None
 
-        fdt = form.get("fixed_desc_text", "")
-        fdp = form.get("fixed_desc_position", "auto")
-        fct = form.get("fixed_comment_text", "")
-        fcm = form.get("fixed_comment_mode", "ai")
+        # Fixed boilerplate: use the form values if the client sent them, else fall
+        # back to the persisted (encrypted) store so it's applied even without a form.
+        from . import fixed as fixed_store
+        saved = fixed_store.get()
+        fdt = form.get("fixed_desc_text") if "fixed_desc_text" in form else saved["desc_text"]
+        fdp = form.get("fixed_desc_position") if "fixed_desc_position" in form else saved["desc_position"]
+        fct = form.get("fixed_comment_text") if "fixed_comment_text" in form else saved["comment_text"]
+        fcm = form.get("fixed_comment_mode") if "fixed_comment_mode" in form else saved["comment_mode"]
 
         jid = _new_job("generate", slug)
 

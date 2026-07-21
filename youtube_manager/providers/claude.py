@@ -1,39 +1,28 @@
-"""Claude provider — highest quality, paid. Key from env ANTHROPIC_API_KEY."""
+"""Claude (Anthropic) provider — highest quality. Supports multiple keys."""
 from __future__ import annotations
 
-import os
-
-from .base import LLMProvider
+from .base import KeyedProvider, QuotaExceeded
 
 
-class ClaudeProvider(LLMProvider):
-    name = "claude"
+class ClaudeProvider(KeyedProvider):
+    name = "anthropic"
 
-    def __init__(self, cfg: dict):
-        self.model = cfg.get("model", "claude-sonnet-5")
-        self._client = None
+    def __init__(self, cfg: dict, keys: list | None = None):
+        super().__init__(cfg, keys)
+        self.model = self.cfg.get("model", "claude-sonnet-5")
 
-    def client(self):
-        if self._client is not None:
-            return self._client
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY not set. Get a key at https://console.anthropic.com/."
-            )
+    def _call(self, key: str, system: str, user: str) -> str:
         import anthropic
 
-        self._client = anthropic.Anthropic(api_key=api_key)
-        return self._client
-
-    def complete(self, system: str, user: str) -> str:
-        client = self.client()
-        msg = client.messages.create(
-            model=self.model,
-            max_tokens=2048,
-            temperature=0.7,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
-        # Concatenate text blocks.
+        client = anthropic.Anthropic(api_key=key)
+        try:
+            msg = client.messages.create(
+                model=self.model, max_tokens=2048, temperature=0.7,
+                system=system, messages=[{"role": "user", "content": user}],
+            )
+        except Exception as e:
+            s = str(e)
+            if "429" in s or "rate_limit" in s or "overloaded" in s.lower():
+                raise QuotaExceeded(f"Anthropic rate/quota limit: {s[:120]}") from e
+            raise
         return "".join(block.text for block in msg.content if block.type == "text")

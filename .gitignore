@@ -20,6 +20,9 @@ downloads/
 frontend/node_modules/
 # (frontend/dist IS committed so `youtube_manager serve` works without a build step)
 
+# Design archive — fallback snapshots of past landing designs, not for GitHub
+design-archive/
+
 # OS
 Thumbs.db
 .DS_Store

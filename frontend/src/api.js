@@ -31,11 +31,18 @@ export const api = {
   logout: () => fetch('/api/auth/logout', { method: 'POST' }).then(j),
   reset: () => fetch('/api/auth/reset', { method: 'POST' }).then(j),
   adminStats: () => fetch('/api/admin/stats').then(j),
+  adminFeedback: () => fetch('/api/admin/feedback').then(j),
 
   getKeys: () => fetch('/api/settings/keys').then(j),
   saveKeys: (keys) => fetch('/api/settings/keys', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(keys),
+  }).then(j),
+
+  getFixed: () => fetch('/api/settings/fixed').then(j),
+  saveFixed: (fixed) => fetch('/api/settings/fixed', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fixed),
   }).then(j),
 
   channels: () => fetch('/api/channels').then(j),

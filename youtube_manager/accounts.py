@@ -77,6 +77,11 @@ def remove(account_id: str) -> None:
     _write([a for a in _read() if a.get("id") != account_id])
 
 
+def purge() -> None:
+    """Delete ALL connected accounts (used by account reset). No auth needed."""
+    STORE.unlink(missing_ok=True)
+
+
 def token_for(account_id: str) -> str | None:
     a = next((a for a in _read() if a.get("id") == account_id), None)
     return a.get("token") if a else None

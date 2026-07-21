@@ -121,9 +121,9 @@ export default function Studio({ accountsTick, onManageAccounts }) {
           const d = await api.getDraft(it.slug)
           const published = d._meta?.video_id || Object.keys(d._meta?.publishes || {}).length
           patchItem(it.id, { status: published ? (it.status === 'publishing' ? 'published' : it.status) : it.status, label: d.title || it.label })
-        } catch { if (busy) patchItem(it.id, { status: 'error', error: 'Lost on restart — please retry.' }) }
+        } catch { if (busy) patchItem(it.id, { status: 'error', error: 'Lost on restart. Please retry.' }) }
       } else if (busy) {
-        patchItem(it.id, { status: 'error', error: 'Lost on restart — please retry.' })
+        patchItem(it.id, { status: 'error', error: 'Lost on restart. Please retry.' })
       }
     })
   }, [patchItem])

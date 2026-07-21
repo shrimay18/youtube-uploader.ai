@@ -1,8 +1,4 @@
-"""Groq provider — fast, free-tier cloud inference (OpenAI-compatible API).
-
-Note: 'gsk_' keys are Groq (groq.com fast inference), NOT xAI's Grok.
-Supports multiple keys (rotated on quota) via KeyedProvider.
-"""
+"""OpenAI (GPT) provider — Chat Completions API. Supports multiple keys."""
 from __future__ import annotations
 
 import requests
@@ -10,13 +6,13 @@ import requests
 from .base import KeyedProvider, QuotaExceeded
 
 
-class GroqProvider(KeyedProvider):
-    name = "groq"
+class OpenAIProvider(KeyedProvider):
+    name = "openai"
 
     def __init__(self, cfg: dict, keys: list | None = None):
         super().__init__(cfg, keys)
-        self.model = self.cfg.get("model", "llama-3.3-70b-versatile")
-        self.base = self.cfg.get("host", "https://api.groq.com/openai/v1").rstrip("/")
+        self.model = self.cfg.get("model", "gpt-4o-mini")
+        self.base = self.cfg.get("host", "https://api.openai.com/v1").rstrip("/")
 
     def _call(self, key: str, system: str, user: str) -> str:
         try:
@@ -36,12 +32,12 @@ class GroqProvider(KeyedProvider):
                 timeout=120,
             )
         except requests.RequestException as e:
-            raise RuntimeError(f"Groq request failed: {e}") from e
+            raise RuntimeError(f"OpenAI request failed: {e}") from e
 
         if r.status_code == 429:
-            raise QuotaExceeded("Groq rate/quota limit hit.")
+            raise QuotaExceeded("OpenAI rate/quota limit hit.")
         if r.status_code in (401, 403):
-            raise RuntimeError(f"Groq auth error {r.status_code} (bad key).")
+            raise RuntimeError(f"OpenAI auth error {r.status_code} (bad key).")
         if r.status_code >= 400:
-            raise RuntimeError(f"Groq error {r.status_code}: {r.text[:200]}")
+            raise RuntimeError(f"OpenAI error {r.status_code}: {r.text[:200]}")
         return r.json()["choices"][0]["message"]["content"] or ""
