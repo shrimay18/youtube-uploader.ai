@@ -84,51 +84,76 @@ class RankingSignals:
     tag_counts: list[tuple[str, int]] = field(default_factory=list)
 
 
-def ranking_signals(query: str, api_key: str, n: int = 10) -> RankingSignals:
+def _as_keys(api_key) -> list[str]:
+    """Accept a single key or a list; return a clean list."""
+    if isinstance(api_key, str):
+        api_key = [api_key]
+    return [k for k in (api_key or []) if k]
+
+
+def _yt_get(url: str, params: dict, keys: list[str], timeout: int = 20):
+    """GET a YouTube Data endpoint, rotating keys on quota exhaustion (HTTP 403
+    quotaExceeded). Returns the Response, or None if every key is spent/failed."""
+    for key in keys:
+        try:
+            r = requests.get(url, params={**params, "key": key}, timeout=timeout)
+        except requests.RequestException:
+            continue                                  # network hiccup — try next key
+        if r.status_code == 403 and "quota" in r.text.lower():
+            continue                                  # this key is out of quota — rotate
+        if r.ok:
+            return r
+        # other 4xx (bad/invalid key, etc.) — try the next key before giving up
+    return None
+
+
+def ranking_signals(query: str, api_key, n: int = 10) -> RankingSignals:
     """Top-ranking videos for `query`: their titles + their ACTUAL tags.
 
     One search (~100 units) for ids+titles, then one videos.list (~1 unit) for the
     real `snippet.tags` of those public videos — the same data pro tools use. Falls
     back to scraping <meta name="keywords"> if the API tags call fails.
+
+    `api_key` may be a single key or a list of keys (rotated on quota exhaustion).
     """
-    if not api_key or not query.strip():
+    keys = _as_keys(api_key)
+    if not keys or not query.strip():
+        return RankingSignals()
+    r = _yt_get(
+        "https://www.googleapis.com/youtube/v3/search",
+        {"part": "snippet", "q": query, "type": "video", "order": "relevance",
+         "maxResults": min(max(n, 1), 25), "relevanceLanguage": "en"},
+        keys,
+    )
+    if r is None:
         return RankingSignals()
     try:
-        r = requests.get(
-            "https://www.googleapis.com/youtube/v3/search",
-            params={
-                "part": "snippet", "q": query, "type": "video",
-                "order": "relevance", "maxResults": min(max(n, 1), 25), "key": api_key,
-                "relevanceLanguage": "en",
-            },
-            timeout=20,
-        )
-        r.raise_for_status()
         items = r.json().get("items", [])
         ids = [it["id"]["videoId"] for it in items if it.get("id", {}).get("videoId")]
         titles = list(dict.fromkeys(it["snippet"]["title"] for it in items))[:n]
-    except (requests.RequestException, KeyError):
+    except (ValueError, KeyError):
         return RankingSignals()
 
-    return RankingSignals(titles=titles, tag_counts=_video_tags(ids, api_key))
+    return RankingSignals(titles=titles, tag_counts=_video_tags(ids, keys))
 
 
-def _video_tags(video_ids: list[str], api_key: str) -> list[tuple[str, int]]:
+def _video_tags(video_ids: list[str], api_key) -> list[tuple[str, int]]:
     """Aggregate real tags across the given public videos (via API; scrape fallback)."""
     if not video_ids:
         return []
+    keys = _as_keys(api_key)
     counter: Counter = Counter()
     got_any = False
+    r = _yt_get(
+        "https://www.googleapis.com/youtube/v3/videos",
+        {"part": "snippet", "id": ",".join(video_ids[:50])},
+        keys,
+    ) if keys else None
     try:
-        r = requests.get(
-            "https://www.googleapis.com/youtube/v3/videos",
-            params={"part": "snippet", "id": ",".join(video_ids[:50]), "key": api_key},
-            timeout=20,
-        )
-        r.raise_for_status()
-        for it in r.json().get("items", []):
-            for tag in it.get("snippet", {}).get("tags", []) or []:
-                counter[tag.strip().lower()] += 1
+        if r is not None:
+            for it in r.json().get("items", []):
+                for tag in it.get("snippet", {}).get("tags", []) or []:
+                    counter[tag.strip().lower()] += 1
                 got_any = True
     except requests.RequestException:
         got_any = False

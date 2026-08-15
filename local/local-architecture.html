@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>youtube_manager.ai — LOCAL architecture handbook</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --ink:#e9eef5; --dim:#a6b0bd; --faint:#6d7887;
+    --line:#242c37; --accent:#12b981; --accent2:#37c6ff; --warn:#ffd23f; --code:#0a0d12; --radius:16px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#13251f,transparent),var(--bg);
+    color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#0c1219;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.9em;color:#bfe9d6}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.6}
+  pre .k{color:#ff9ecb}pre .s{color:#a6e3a1}pre .c{color:#6d7887;font-style:italic}pre .f{color:#8bd5ff}
+  /* progress + header */
+  #bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;z-index:100;transition:width .1s}
+  header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(14,17,22,.72);border-bottom:1px solid var(--line)}
+  .top .in{max-width:1180px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:12px}
+  .badge{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-weight:800;color:#04120c}
+  .top b{font-weight:800;letter-spacing:-.3px}.top .tag{color:var(--faint);font-size:12px;margin-left:auto}
+  /* layout */
+  .layout{max-width:1180px;margin:0 auto;padding:0 22px;display:grid;grid-template-columns:240px 1fr;gap:34px}
+  nav.toc{position:sticky;top:70px;align-self:start;height:calc(100vh - 90px);overflow:auto;padding:22px 0;font-size:13.5px}
+  nav.toc a{display:block;color:var(--dim);padding:6px 10px;border-left:2px solid transparent;border-radius:0 8px 8px 0}
+  nav.toc a:hover{color:var(--ink);text-decoration:none;background:var(--panel)}
+  nav.toc a.on{color:var(--accent);border-left-color:var(--accent);background:var(--panel)}
+  nav.toc .grp{color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;margin:16px 10px 6px}
+  main{padding:22px 0 120px;min-width:0}
+  /* hero */
+  .hero{padding:46px 0 26px;border-bottom:1px solid var(--line);margin-bottom:30px}
+  .hero .kick{color:var(--accent);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:12px}
+  .hero h1{font-size:clamp(30px,5vw,46px);line-height:1.05;letter-spacing:-1.5px;margin:10px 0 12px}
+  .hero p{color:var(--dim);font-size:18px;max-width:680px}
+  .hero .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+  section{margin:44px 0;scroll-margin-top:80px}
+  h2{font-size:27px;letter-spacing:-.6px;margin:0 0 6px;display:flex;align-items:center;gap:12px}
+  h2 .n{font-size:14px;width:30px;height:30px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--accent)}
+  h3{font-size:19px;margin:26px 0 6px;letter-spacing:-.3px}
+  p{margin:10px 0}
+  .lead{color:var(--dim);font-size:16.5px}
+  /* reveal */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+  .rv.in{opacity:1;transform:none}
+  /* callouts */
+  .box{border-radius:var(--radius);padding:16px 18px;margin:16px 0;border:1px solid var(--line);background:var(--panel)}
+  .box .lbl{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .plain{background:linear-gradient(180deg,#12231d,var(--panel));border-color:#1f4739}
+  .plain .lbl{color:var(--accent)}
+  .why{background:linear-gradient(180deg,#231d12,var(--panel));border-color:#4a3c1c}
+  .why .lbl{color:var(--warn)}
+  .gotcha{background:linear-gradient(180deg,#2a1518,var(--panel));border-color:#5a2830}
+  .gotcha .lbl{color:#ff8497}
+  .box p{margin:6px 0}
+  /* diagram */
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;overflow-x:auto}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center;min-width:120px}
+  .node b{display:block;font-size:14px}.node small{color:var(--faint);font-size:11.5px}
+  .node.acc{border-color:var(--accent);box-shadow:0 0 0 3px rgba(18,185,129,.12)}
+  .node.net{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(55,198,255,.12)}
+  .arrow{color:var(--accent);font-size:22px;position:relative}
+  .arrow.flow::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.0}
+  .wrapbox{border:1px dashed var(--line);border-radius:14px;padding:14px;display:inline-block}
+  .wrapbox .cap{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+  /* steps */
+  .steps{counter-reset:s;margin:16px 0}
+  .step{position:relative;padding:12px 0 12px 46px;border-left:2px solid var(--line);margin-left:14px}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:-15px;top:10px;width:28px;height:28px;border-radius:50%;
+    background:var(--panel2);border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px}
+  .step b{color:var(--ink)}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  tr:hover td{background:var(--panel)}
+  .foot{color:var(--faint);font-size:13px;border-top:1px solid var(--line);padding:26px 0;margin-top:40px}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}nav.toc{display:none}}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<header class="top">
+  <div class="in"><div class="badge">▶</div><b>youtube_manager.ai</b><span class="tag">LOCAL architecture handbook · read me like a story</span></div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="grp">Start here</div>
+    <a href="#what">1 · What is this thing?</a>
+    <a href="#picture">2 · The big picture</a>
+    <div class="grp">The pieces</div>
+    <a href="#front">3 · The frontend</a>
+    <a href="#back">4 · The backend</a>
+    <a href="#vault">5 · The vault (secret safe)</a>
+    <a href="#login">6 · Logging in</a>
+    <a href="#pipeline">7 · The pipeline</a>
+    <a href="#llm">8 · The AI brains</a>
+    <a href="#youtube">9 · Connecting YouTube</a>
+    <div class="grp">Deep dive</div>
+    <a href="#flow">10 · Follow one click</a>
+    <a href="#security">11 · Why it's safe</a>
+    <a href="#choices">12 · Choices (interview)</a>
+    <a href="#wall">13 · Where it hits a wall</a>
+  </nav>
+
+  <main>
+    <div class="hero rv">
+      <div class="kick">The local version</div>
+      <h1>How the app works when it lives<br>on <span style="color:var(--accent)">your own computer</span>.</h1>
+      <p class="lead">This is the original design. Everything runs on your machine. Your secret keys never leave. Read top-to-bottom — every idea is explained like you're in school, and every big decision has a box you can quote in an interview.</p>
+      <div class="chips"><span class="chip">Python + Flask</span><span class="chip">React</span><span class="chip">Runs on localhost:8765</span><span class="chip">Encrypted local vault</span><span class="chip">Single user</span><span class="chip">Zero-knowledge</span></div>
+    </div>
+
+    <section id="what" class="rv">
+      <h2><span class="n">1</span>What is this thing?</h2>
+      <p class="lead">You give it a video. It writes the perfect YouTube <b>title, description, tags, chapters and thumbnail</b> (the stuff that helps a video get found), and then it can <b>upload the video to your YouTube channel</b> for you.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p>Imagine a super-smart helper who watches your video, listens to it, figures out what people are searching for on YouTube, and writes all the "packaging" so your video shows up in search. Then it posts it for you. In the <b>local</b> version, this whole helper lives <b>inside your computer</b> — like an app you installed, not a website.</p>
+      </div>
+      <p>It's made of two halves that talk to each other:</p>
+      <ul>
+        <li><b>The frontend</b> — the buttons and screens you see (built with React).</li>
+        <li><b>The backend</b> — the "engine" that does the real work (built with Python + Flask).</li>
+      </ul>
+    </section>
+
+    <section id="picture" class="rv">
+      <h2><span class="n">2</span>The big picture (one diagram to rule them all)</h2>
+      <p class="lead">Everything inside the dashed box runs on <b>your computer</b>. Only when it needs to talk to Google or an AI does it reach out to the internet.</p>
+      <div class="diagram">
+        <div class="wrapbox" style="width:100%">
+          <div class="cap">🖥️ your computer</div>
+          <div class="row">
+            <div class="node acc"><b>Browser</b><small>React screens</small></div>
+            <div class="arrow">⇄</div>
+            <div class="node acc"><b>Local server</b><small>Flask · :8765</small></div>
+            <div class="arrow">→</div>
+            <div class="wrapbox"><div class="cap">inside the server</div>
+              <div class="row">
+                <div class="node"><b>Vault</b><small>encrypted keys</small></div>
+                <div class="node"><b>Pipeline</b><small>the assembly line</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:16px"><div class="arrow">↓ only when needed ↓</div></div>
+        <div class="row">
+          <div class="node net"><b>Google / YouTube</b><small>sign-in + upload</small></div>
+          <div class="node net"><b>AI providers</b><small>Gemini · Groq · Claude</small></div>
+        </div>
+      </div>
+      <div class="box why"><div class="lbl">🎓 Why build it "local-first"?</div>
+        <p><b>The promise:</b> "your secret keys never leave your device." That's a real privacy selling point. Because the engine runs on your machine, your API keys and YouTube passwords-of-sorts (tokens) are only ever on your disk — we (the makers) literally cannot see them. <b>Interview line:</b> "Local-first gave us a genuine zero-knowledge privacy guarantee — there's no server that ever holds user secrets."</p>
+      </div>
+    </section>
+
+    <section id="front" class="rv">
+      <h2><span class="n">3</span>The frontend — the part you click</h2>
+      <p>Built with <b>React</b> (a popular way to build web screens) and <b>Vite</b> (a tool that bundles it into fast files). The finished files live in <code>frontend/dist</code>.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div><p>React is like LEGO for web pages — you build small blocks (a button, a card, a modal) and snap them together. Vite is the machine that packs all those blocks into a neat box the browser can open quickly.</p></div>
+      <p>Here's the clever part: the <b>backend also serves the frontend</b>. When you open <code>localhost:8765</code>, the Flask server hands you the React files. So you only run <b>one</b> thing, and the screens + engine come together.</p>
+      <div class="box why"><div class="lbl">🎓 Why serve the frontend from the backend?</div><p>One process to start, no separate web server, and the browser talks to the API on the <em>same address</em> (no cross-origin headaches). Great for a desktop-style local app.</p></div>
+    </section>
+
+    <section id="back" class="rv">
+      <h2><span class="n">4</span>The backend — the engine (Flask)</h2>
+      <p>You start it with one command: <code>python -m youtube_manager serve</code>. That boots a <b>Flask</b> web server on port <code>8765</code> that: (1) serves the React screens, and (2) answers <b>API</b> requests like "make me a draft" or "publish this."</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div><p>Flask is a small, friendly Python tool for making a web server. Think of it as a waiter: the browser asks for something (<code>/api/generate</code>), the waiter (Flask) takes the order to the kitchen (the pipeline), and brings back the result.</p></div>
+      <p>An <b>API</b> is just a set of "doors" (URLs) the frontend can knock on. Examples in this app:</p>
+      <table>
+        <tr><th>Door (URL)</th><th>What it does</th></tr>
+        <tr><td><code>/api/generate</code></td><td>Start making a draft from a video</td></tr>
+        <tr><td><code>/api/jobs/&lt;id&gt;</code></td><td>Check "is my draft ready yet?"</td></tr>
+        <tr><td><code>/api/drafts/&lt;slug&gt;/publish</code></td><td>Upload the finished video to YouTube</td></tr>
+        <tr><td><code>/api/settings/keys</code></td><td>Save/read your AI keys (masked)</td></tr>
+      </table>
+    </section>
+
+    <section id="vault" class="rv">
+      <h2><span class="n">5</span>The vault — the secret safe 🔐</h2>
+      <p>Your AI keys and YouTube tokens are <b>secrets</b>. The <b>vault</b> (<code>vault.py</code>) locks them up so nobody — not even someone who steals your laptop file — can read them without your password.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p>Imagine a safe. The safe scrambles your keys into gibberish (<b>encryption</b>). To scramble/unscramble, you need a special "safe key." Where does the safe key come from?</p>
+        <ul>
+          <li><b>Password accounts:</b> the safe key is <b>made from your password</b> using a recipe called <b>scrypt</b>. No password → no safe key → the gibberish stays gibberish. (That's also why there's <b>no password recovery</b> — even we can't open it.)</li>
+          <li><b>Google accounts:</b> the safe key is a random key stored in your <b>operating system's keychain</b> (Windows Credential Manager), which only unlocks when you're logged into your computer.</li>
+        </ul>
+      </div>
+      <p>The actual scrambling uses <b>Fernet</b> (a well-tested encryption method). The secrets sit encrypted in a file called <code>account.json</code>.</p>
+      <div class="box why"><div class="lbl">🎓 Why scrypt + Fernet + OS keychain?</div>
+        <p><b>Fernet</b> = a safe, standard "encrypt this string" tool (AES under the hood) so we don't invent our own crypto. <b>scrypt</b> = turns a human password into a strong key <em>and</em> is deliberately slow, so a hacker can't guess millions of passwords quickly. <b>OS keychain</b> = for Google logins there's no password to derive from, so we lean on the operating system's secure storage. <b>Interview line:</b> "We never store the encryption key next to the data; it's derived from the user's password or kept in the OS keychain — so the on-disk file alone is useless to an attacker."</p>
+      </div>
+    </section>
+
+    <section id="login" class="rv">
+      <h2><span class="n">6</span>Logging in (single user)</h2>
+      <p>Because the app runs on your machine, there's really only <b>one</b> user: you. You sign in (with a password or "Continue with Google"), and that <b>unlocks the vault</b> for this session. The unlocked keys are kept in memory while the app runs.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div><p>Signing in is like opening the safe for the day. While it's open, the engine can grab your keys to do work. Close the app (or log out) and the safe locks again.</p></div>
+      <p>Google sign-in uses <b>Supabase</b> (a hosted service) just to prove "yes, this is really you." Even then, the <b>keys stay local</b> — Supabase only helps with the login handshake.</p>
+    </section>
+
+    <section id="pipeline" class="rv">
+      <h2><span class="n">7</span>The pipeline — the assembly line 🏭</h2>
+      <p>Turning a video into a finished post happens in 5 stages (<code>pipeline.build_draft</code>). Each stage hands its result to the next, like a factory belt.</p>
+      <div class="diagram">
+        <div class="row">
+          <div class="node acc"><b>1 · Ingest</b><small>get the video file</small></div><div class="arrow">→</div>
+          <div class="node acc"><b>2 · Transcribe</b><small>video → text</small></div><div class="arrow">→</div>
+          <div class="node acc"><b>3 · Research</b><small>what ranks?</small></div><div class="arrow">→</div>
+          <div class="node acc"><b>4 · Generate</b><small>AI writes it</small></div><div class="arrow">→</div>
+          <div class="node acc"><b>5 · Draft</b><small>save + review</small></div>
+        </div>
+      </div>
+      <h3>Stage 2: Transcribe (the ears 👂)</h3>
+      <p>It pulls the audio out with <b>ffmpeg</b> (a tool that handles audio/video), then uses <b>faster-whisper</b> (a speech-to-text AI that runs <em>on your computer</em>) to turn speech into text — with timestamps, so we can auto-build chapters.</p>
+      <div class="box why"><div class="lbl">🎓 Why faster-whisper (local speech-to-text)?</div><p>It's free, private (audio never leaves your machine), and good. On a GPU it's ~45× real-time. <b>Interview line:</b> "We used a local Whisper model so transcription stays free and private — no per-minute API bill and no audio leaving the device."</p></div>
+      <h3>Stage 3: Research (the detective 🔎)</h3>
+      <p>It figures out what's already ranking for your topic — using free signals like YouTube autocomplete, Google Trends, and the <b>YouTube Data API</b> (to see the titles/tags of top videos). This is what makes the writing rank, instead of being generic AI mush.</p>
+      <h3>Stage 4: Generate (the writer ✍️)</h3>
+      <p>An <b>LLM</b> (a text-writing AI like Gemini) reads the transcript + the research and writes candidate titles, a description, tags, chapters, and a pinned comment. Then a <b>local SEO scorer</b> (<code>seo.py</code>, plain math, no AI, so it's free and predictable) scores each title 0–100 and picks the best.</p>
+      <div class="box why"><div class="lbl">🎓 Why a local scorer instead of asking the AI to rate itself?</div><p>AIs are bad, biased judges of their own work and it costs another API call. A deterministic scorer (length, keyword placement, ranking-word coverage) is <b>free, fast, and repeatable</b>. <b>Interview line:</b> "We score titles with a local, deterministic function against real ranking vocabulary — cheaper and more trustworthy than self-evaluation."</p></div>
+    </section>
+
+    <section id="llm" class="rv">
+      <h2><span class="n">8</span>The AI brains — providers &amp; fallback</h2>
+      <p>The app can use several AI providers (Gemini, Groq, OpenAI, Claude). They all hide behind one common shape (an <b>interface</b>) so the rest of the code doesn't care which one it's talking to.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p>Two clever tricks:</p>
+        <p><b>1) Many keys, auto-rotate.</b> Each provider can hold several API keys. Free keys run out ("quota"). If key #1 is exhausted, it quietly tries key #2, then #3. Like a singer losing their voice — the backup singer steps in.</p>
+        <p><b>2) Provider fallback chain.</b> You set an order (say Claude → Gemini → Groq). If Claude is out of quota, it falls to Gemini, then Groq, without you noticing.</p>
+      </div>
+      <pre><span class="c"># the heart of key rotation (providers/base.py), simplified</span>
+<span class="k">for</span> key <span class="k">in</span> self.keys:
+    <span class="k">try</span>: <span class="k">return</span> self._call(key, system, user)   <span class="c"># worked!</span>
+    <span class="k">except</span> QuotaExceeded: <span class="k">continue</span>          <span class="c"># this key is spent → next</span></pre>
+      <div class="box why"><div class="lbl">🎓 Why the interface + fallback design? (This is textbook SOLID.)</div>
+        <p>Adding a new AI provider = writing one new class; nothing else changes. That's the <b>Open/Closed Principle</b> ("open to extension, closed to modification"). Swapping providers freely is the <b>Liskov</b> idea (any provider works wherever the interface is expected). <b>Interview line:</b> "Providers sit behind a common interface with a fallback chain, so adding one is a new class and the pipeline never changes — classic OCP/LSP."</p>
+      </div>
+    </section>
+
+    <section id="youtube" class="rv">
+      <h2><span class="n">9</span>Connecting YouTube (giving a valet key 🅿️)</h2>
+      <p>To upload to your channel, the app needs your permission. That's <b>OAuth</b> — you click "Connect", a Google window opens, you approve, and Google hands the app a <b>token</b> (a temporary "valet key") that lets it upload <em>only</em> to that channel.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div><p>A valet key lets someone park your car but not open the trunk. The YouTube token lets the app upload videos to your channel but nothing more, and you can revoke it anytime.</p></div>
+      <p>In the <b>local</b> app, this uses a "loopback" flow: Google redirects back to a tiny web address <em>on your own computer</em>. (Remember this detail — it's exactly what <b>can't</b> work on a hosted server, and it's why the production version rebuilds this part.)</p>
+      <p>You can connect <b>multiple channels</b> and publish one video to several at once — each channel keeps its own token.</p>
+    </section>
+
+    <section id="flow" class="rv">
+      <h2><span class="n">10</span>Follow one click: "Generate a draft"</h2>
+      <p>Let's trace exactly what happens in the code when you click Generate. This is the kind of end-to-end story interviewers love.</p>
+      <div class="steps">
+        <div class="step"><b>Browser</b> sends your video link to <code>POST /api/generate</code>.</div>
+        <div class="step"><b>Flask</b> creates a "job" and starts it on a background <b>thread</b> (so your screen doesn't freeze). It returns a <code>job_id</code> instantly.</div>
+        <div class="step">The thread calls <code>pipeline.build_draft(...)</code> — the assembly line.</div>
+        <div class="step"><b>Ingest</b> downloads/locates the video → <b>transcribe</b> (ffmpeg + Whisper) → <b>research</b> (YouTube API + trends) → <b>generate</b> (LLM writes, SEO scorer picks the best title).</div>
+        <div class="step">The finished draft is saved as a <code>draft.yaml</code> file, and the job is marked <b>done</b>.</div>
+        <div class="step">Meanwhile the browser keeps asking <code>GET /api/jobs/&lt;id&gt;</code> ("ready yet?") every 1.5s until it says done — then shows you the draft to review.</div>
+      </div>
+      <div class="box gotcha"><div class="lbl">⚠️ Remember this: jobs run on in-process threads</div><p>The work happens on a <b>thread inside the web server</b>, and the job list lives in <b>memory</b>. That's totally fine for one person on one computer. But it becomes a problem when many people share one server (a thread can clobber another, and a restart loses jobs). Hold that thought for the production handbook.</p></div>
+    </section>
+
+    <section id="security" class="rv">
+      <h2><span class="n">11</span>Why your stuff is safe (zero-knowledge)</h2>
+      <ul>
+        <li>Keys and tokens are <b>encrypted</b> on your disk; the encryption key comes from your password or the OS keychain — never stored next to the data.</li>
+        <li>AI requests go <b>straight from your machine</b> to the AI provider using your own key. We're never in the middle.</li>
+        <li>The only thing that touches our (Supabase) servers is the login handshake and anonymous usage counts (no content, no keys).</li>
+      </ul>
+      <div class="box why"><div class="lbl">🎓 Interview summary of the security model</div><p>"It's zero-knowledge by construction: the sensitive data physically never leaves the device, and even the on-disk copy is encrypted with a key we never possess."</p></div>
+    </section>
+
+    <section id="choices" class="rv">
+      <h2><span class="n">12</span>The choices, for interviews 🎓</h2>
+      <p>A cheat-sheet of every big decision — what, why, and the one-liner to say.</p>
+      <table>
+        <tr><th>Choice</th><th>Why</th></tr>
+        <tr><td><b>Local-first</b></td><td>Genuine privacy ("keys never leave your device") and $0 to run — the user's machine does the work.</td></tr>
+        <tr><td><b>Flask</b></td><td>Tiny, simple Python web server; perfect for a single-user local app that also serves the React files.</td></tr>
+        <tr><td><b>Fernet + scrypt + OS keychain</b></td><td>Standard, audited encryption; the key is derived from the password or kept by the OS — never stored beside the data.</td></tr>
+        <tr><td><b>faster-whisper (local)</b></td><td>Free + private speech-to-text; no per-minute bill, audio never leaves the machine.</td></tr>
+        <tr><td><b>Provider interface + fallback</b></td><td>OCP/LSP: add a provider = one class; auto-rotate keys and providers on quota so generation rarely fails.</td></tr>
+        <tr><td><b>Local deterministic SEO scorer</b></td><td>Free, fast, repeatable title scoring vs. an unreliable, costly "ask the AI to grade itself".</td></tr>
+        <tr><td><b>Supabase for auth only</b></td><td>Reuse a solid Google-login service without giving up the local, zero-knowledge storage of secrets.</td></tr>
+      </table>
+    </section>
+
+    <section id="wall" class="rv">
+      <h2><span class="n">13</span>Where the local model hits a wall 🧱</h2>
+      <p>The local design is lovely for privacy — but it forces every user to <b>install and run</b> the app. That kills the "just visit a link and start" dream. And a few things simply can't work on a shared server the way they do locally:</p>
+      <ul>
+        <li><b>The vault</b> assumes one user + the OS keychain — no good for many users on one server.</li>
+        <li><b>YouTube's loopback OAuth</b> only works on a device, not a server.</li>
+        <li><b>Jobs on threads + in-memory</b> don't survive a shared, restarting server.</li>
+        <li><b>Whisper</b> needs a beefy machine per user.</li>
+      </ul>
+      <div class="box plain"><div class="lbl">🧒 So what next?</div><p>To let anyone use it by just visiting a website, we re-architect it into a <b>hosted SaaS</b>. That's a whole separate story — with a different set of trade-offs and choices. It's in the <b>production handbook</b> (the other folder).</p></div>
+    </section>
+
+    <div class="foot">Local architecture handbook · Read the companion <b>production/</b> handbook next to see how (and why) we turned this into a website anyone can visit.</div>
+  </main>
+</div>
+
+<script>
+  // scroll progress bar
+  const bar=document.getElementById('bar');
+  addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight);bar.style.width=(p*100)+'%';});
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('.rv').forEach(n=>io.observe(n));
+  // active TOC highlight
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.remove('on'));map.get(e.target.id)?.classList.add('on');}}),{rootMargin:'-40% 0px -55% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>so.observe(s));
+</script>
+</body>
+</html>

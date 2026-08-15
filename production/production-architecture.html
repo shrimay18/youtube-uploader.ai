@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>youtube_manager.ai — PRODUCTION (hosted SaaS) architecture handbook</title>
+<style>
+  :root{
+    --bg:#0f0d10; --panel:#191216; --panel2:#231a1f; --ink:#f3ecef; --dim:#c0adb5; --faint:#8a7680;
+    --line:#33232b; --accent:#ff2d55; --accent2:#ff8a3d; --ok:#37d19a; --warn:#ffce4a; --code:#120b0e; --radius:16px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(1200px 600px at 85% -12%,#2a1016,transparent),var(--bg);
+    color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#1a0f14;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.9em;color:#ffc7b0}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.6}
+  pre .k{color:#ff9ecb}pre .s{color:#ffd39c}pre .c{color:#8a7680;font-style:italic}pre .f{color:#ff8a3d}
+  #bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;z-index:100;transition:width .1s}
+  header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(15,13,16,.72);border-bottom:1px solid var(--line)}
+  .top .in{max-width:1180px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:12px}
+  .badge{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-weight:800;color:#1a0208}
+  .top b{font-weight:800;letter-spacing:-.3px}.top .tag{color:var(--faint);font-size:12px;margin-left:auto}
+  .layout{max-width:1180px;margin:0 auto;padding:0 22px;display:grid;grid-template-columns:250px 1fr;gap:34px}
+  nav.toc{position:sticky;top:70px;align-self:start;height:calc(100vh - 90px);overflow:auto;padding:22px 0;font-size:13.5px}
+  nav.toc a{display:block;color:var(--dim);padding:6px 10px;border-left:2px solid transparent;border-radius:0 8px 8px 0}
+  nav.toc a:hover{color:var(--ink);text-decoration:none;background:var(--panel)}
+  nav.toc a.on{color:var(--accent);border-left-color:var(--accent);background:var(--panel)}
+  nav.toc .grp{color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;margin:16px 10px 6px}
+  main{padding:22px 0 120px;min-width:0}
+  .hero{padding:46px 0 26px;border-bottom:1px solid var(--line);margin-bottom:30px}
+  .hero .kick{color:var(--accent);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:12px}
+  .hero h1{font-size:clamp(30px,5vw,46px);line-height:1.05;letter-spacing:-1.5px;margin:10px 0 12px}
+  .hero p{color:var(--dim);font-size:18px;max-width:700px}
+  .hero .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+  section{margin:44px 0;scroll-margin-top:80px}
+  h2{font-size:27px;letter-spacing:-.6px;margin:0 0 6px;display:flex;align-items:center;gap:12px}
+  h2 .n{font-size:14px;width:30px;height:30px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--accent)}
+  h3{font-size:19px;margin:26px 0 6px;letter-spacing:-.3px}
+  p{margin:10px 0}.lead{color:var(--dim);font-size:16.5px}
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}.rv.in{opacity:1;transform:none}
+  .box{border-radius:var(--radius);padding:16px 18px;margin:16px 0;border:1px solid var(--line);background:var(--panel)}
+  .box .lbl{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .box p{margin:6px 0}
+  .plain{background:linear-gradient(180deg,#221016,var(--panel));border-color:#4a1f2b}.plain .lbl{color:var(--accent)}
+  .why{background:linear-gradient(180deg,#231a10,var(--panel));border-color:#4a3a1c}.why .lbl{color:var(--warn)}
+  .gotcha{background:linear-gradient(180deg,#2a1518,var(--panel));border-color:#5a2830}.gotcha .lbl{color:#ff8497}
+  .ok{background:linear-gradient(180deg,#0f231b,var(--panel));border-color:#1c4a39}.ok .lbl{color:var(--ok)}
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;overflow-x:auto}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center;min-width:120px}
+  .node b{display:block;font-size:14px}.node small{color:var(--faint);font-size:11.5px}
+  .node.acc{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,45,85,.12)}
+  .node.net{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(255,138,61,.12)}
+  .node.db{border-color:var(--ok);box-shadow:0 0 0 3px rgba(55,209,154,.12)}
+  .arrow{color:var(--accent);font-size:22px}
+  .wrapbox{border:1px dashed var(--line);border-radius:14px;padding:14px;display:inline-block}
+  .wrapbox .cap{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+  .steps{counter-reset:s;margin:16px 0}
+  .step{position:relative;padding:12px 0 12px 46px;border-left:2px solid var(--line);margin-left:14px}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:-15px;top:10px;width:28px;height:28px;border-radius:50%;
+    background:var(--panel2);border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px}
+  .step b{color:var(--ink)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  tr:hover td{background:var(--panel)}
+  .phase{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;margin:22px 0;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+  .phase .p{width:52px;height:52px;flex:none;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1a0208}
+  .phase h3{margin:0 0 4px}
+  .quotacalc{font-family:var(--mono);font-size:14px;background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+  .quotacalc .big{color:var(--accent);font-size:20px;font-weight:800}
+  .foot{color:var(--faint);font-size:13px;border-top:1px solid var(--line);padding:26px 0;margin-top:40px}
+  .status{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;letter-spacing:.04em}
+  .st-done{background:rgba(55,209,154,.16);color:var(--ok);border:1px solid #1c4a39}
+  .st-pend{background:rgba(255,206,74,.14);color:var(--warn);border:1px solid #4a3a1c}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}nav.toc{display:none}}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<header class="top">
+  <div class="in"><div class="badge">▶</div><b>youtube_manager.ai</b><span class="tag">PRODUCTION (hosted SaaS) handbook · the pivot, explained</span></div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <div class="grp">The pivot</div>
+    <a href="#why">1 · Why change everything?</a>
+    <a href="#picture">2 · The big picture</a>
+    <a href="#localvs">3 · Local vs hosted</a>
+    <div class="grp">The 4 phases</div>
+    <a href="#p1">P1 · Keys + login</a>
+    <a href="#p2">P2 · YouTube + quota</a>
+    <a href="#p3">P3 · Transcribe + jobs</a>
+    <a href="#p4">P4 · Deploy</a>
+    <div class="grp">Deep dive</div>
+    <a href="#flow">4 · Follow one click</a>
+    <a href="#solid">5 · Clean code (SOLID)</a>
+    <a href="#tests">6 · 64 tests</a>
+    <a href="#compliance">7 · Privacy &amp; audit</a>
+    <a href="#choices">8 · Choices (interview)</a>
+    <a href="#status">9 · What's built / left</a>
+  </nav>
+
+  <main>
+    <div class="hero rv">
+      <div class="kick">The production version</div>
+      <h1>Turning the app into a website<br><span style="color:var(--accent)">anyone can just visit</span>.</h1>
+      <p class="lead">The local app was private but you had to install it. To let anyone use it from a link, we rebuilt it as a <b>hosted, multi-tenant SaaS</b>. This handbook explains every new part, the trade-offs, the YouTube quota math, and the reasoning — all in plain language and interview-ready.</p>
+      <div class="chips"><span class="chip">Vercel + Oracle Cloud</span><span class="chip">Supabase (Postgres)</span><span class="chip">Stateless JWT auth</span><span class="chip">Server-side encrypted keys</span><span class="chip">Job queue (RQ+Redis)</span><span class="chip">$0/month</span></div>
+    </div>
+
+    <section id="why" class="rv">
+      <h2><span class="n">1</span>Why change everything?</h2>
+      <p class="lead">The local app is great, but it has one deal-breaker: <b>every user must download and run it</b>. Most people won't. The dream is: <em>click a link, sign in, go.</em> That means the engine has to live on <b>our server</b>, not the user's computer.</p>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p><b>Local</b> = the helper lives in your house. Very private, but you had to build the house first. <b>Hosted (SaaS)</b> = the helper lives in a shared building you visit through a website. Way easier for everyone — but now the helper is holding your keys in that building, so we have to lock them up really well.</p>
+      </div>
+      <div class="box gotcha"><div class="lbl">⚠️ The honest trade-off (say this in interviews)</div>
+        <p>The local promise "your keys never leave your device" <b>cannot be literally true</b> in a hosted app — there's no local engine anymore. So the promise changes to: <b>"your keys are encrypted at rest on our servers and we never read them."</b> We even had to rewrite the privacy policy to say this before applying for YouTube's audit. <b>Recognizing and owning that trade-off is the mature engineering answer.</b></p>
+      </div>
+      <p><b>"Multi-tenant"</b> just means: many users ("tenants") share one server, but each only ever sees their own data. That one idea drives almost every decision below.</p>
+    </section>
+
+    <section id="picture" class="rv">
+      <h2><span class="n">2</span>The big picture</h2>
+      <p class="lead">Three players. The browser talks to our backend; the backend talks to the database and the outside world.</p>
+      <div class="diagram">
+        <div class="row">
+          <div class="node net"><b>Vercel</b><small>React frontend<br>(just the screens)</small></div>
+          <div class="arrow">→ HTTPS + JWT →</div>
+          <div class="wrapbox"><div class="cap">☁️ Oracle Cloud VM (always on, free)</div>
+            <div class="row">
+              <div class="node acc"><b>gunicorn</b><small>the web engine</small></div>
+              <div class="node acc"><b>rq worker</b><small>does heavy jobs</small></div>
+              <div class="node"><b>Redis</b><small>the to-do list</small></div>
+              <div class="node"><b>ffmpeg</b><small>audio/video</small></div>
+            </div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="node db"><b>Supabase</b><small>Postgres DB<br>encrypted keys/tokens</small></div>
+        </div>
+      </div>
+      <div class="box plain"><div class="lbl">🧒 Who does what?</div>
+        <ul>
+          <li><b>Vercel</b> hosts only the <em>screens</em> (static files). It's free and fast, but it <b>cannot</b> run heavy Python, ffmpeg, or long jobs — that's why the engine lives elsewhere.</li>
+          <li><b>Oracle VM</b> is a small always-on computer in the cloud that runs the real Python engine 24/7.</li>
+          <li><b>Supabase</b> is the shared filing cabinet (a Postgres database) where each user's encrypted keys, tokens and usage are stored.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="localvs" class="rv">
+      <h2><span class="n">3</span>Local vs hosted — what actually changed</h2>
+      <p>Same features, four rebuilt foundations. Each row is one phase (P1–P4).</p>
+      <table>
+        <tr><th>Part</th><th>Local version</th><th>Hosted version</th></tr>
+        <tr><td>Secret keys</td><td>Vault on your disk (OS keychain)</td><td><b>P1:</b> encrypted per-user rows in the database</td></tr>
+        <tr><td>Login</td><td>Single user unlocks the vault</td><td><b>P1:</b> every request carries a JWT ticket; server checks it</td></tr>
+        <tr><td>YouTube connect</td><td>Loopback OAuth on your device</td><td><b>P2:</b> web OAuth on a real domain + quota fallback</td></tr>
+        <tr><td>Transcription</td><td>Whisper on your CPU/GPU</td><td><b>P3:</b> a transcription API (or Whisper on the server)</td></tr>
+        <tr><td>Background work</td><td>Threads inside the web server</td><td><b>P3:</b> a real job queue (Redis + a worker)</td></tr>
+        <tr><td>Where it runs</td><td>localhost:8765</td><td><b>P4:</b> Vercel + Oracle, HTTPS, CORS</td></tr>
+      </table>
+    </section>
+
+    <section id="p1" class="rv">
+      <div class="phase">
+        <div class="p">P1</div>
+        <div>
+          <h3>Server-side encrypted keys + JWT login</h3>
+          <p class="lead">Store each user's secrets safely on the server, and prove who's asking on every request.</p>
+        </div>
+      </div>
+      <p>Two problems to solve at once: (1) where do secrets live now that there's no device vault, and (2) how does the server know <em>which</em> user is calling?</p>
+
+      <h3>The login ticket (JWT)</h3>
+      <div class="box plain"><div class="lbl">🧒 In plain English — the coat check</div>
+        <p>When you sign in with Google (via Supabase), you get a <b>JWT</b> — think of it as a numbered coat-check ticket that's <em>impossible to forge</em> (it's cryptographically signed). Every time your browser asks the server to do something, it shows the ticket (<code>Authorization: Bearer &lt;token&gt;</code>). The server checks the signature, reads "this is user #42", and only touches user #42's data.</p>
+      </div>
+      <pre><span class="c"># auth_web.py — every request turns a token into a user (simplified)</span>
+<span class="k">def</span> <span class="f">context_from_request</span>(request, key_service):
+    token = bearer_token(request)                 <span class="c"># pull the ticket</span>
+    claims = supabase_auth.verify(token)          <span class="c"># is it real? (JWKS/ES256)</span>
+    <span class="k">return</span> key_service.build_context(claims.user_id)  <span class="c"># load THAT user's keys</span></pre>
+      <div class="box why"><div class="lbl">🎓 Why JWT / stateless auth?</div>
+        <p>The local app kept the logged-in user in a <b>global variable</b> (<code>vault._STATE</code>). With many users on one server that's a disaster — request A could overwrite request B's identity. A JWT is <b>stateless</b>: the identity travels <em>with each request</em>, so two users are never confused, and we can add more servers later without a shared login memory. <b>Interview line:</b> "We removed global mutable state and made auth per-request/stateless via signed JWTs — the multi-tenant-safe pattern."</p>
+      </div>
+
+      <h3>Locking the keys (KeyCrypto + KeyStore + KeyService)</h3>
+      <div class="box plain"><div class="lbl">🧒 In plain English — the locked drawer</div>
+        <p>Keys are scrambled with <b>Fernet</b> using one <b>master key</b> (<code>TM_MASTER_KEY</code>) that lives only in the server's environment — never in the database, never in the browser. So even someone who copies the whole database gets only <b>gibberish</b>. The user only ever sees a <b>masked</b> version (like <code>AIzaSy…tgs</code>).</p>
+      </div>
+      <p>Three small classes, each with one job:</p>
+      <ul>
+        <li><b><code>KeyCrypto</code></b> — the scrambler: <code>.enc()</code> / <code>.dec()</code>.</li>
+        <li><b><code>KeyStore</code></b> — where rows live. It's an <em>interface</em> with two bodies: <code>InMemoryKeyStore</code> (for tests) and <code>SupabaseKeyStore</code> (real database).</li>
+        <li><b><code>KeyService</code></b> — the brain that ties them together: save, list-masked, and build the per-user context.</li>
+      </ul>
+      <div class="box why"><div class="lbl">🎓 Why split into three (and an interface)?</div>
+        <p><b>Single Responsibility</b>: each class does one thing. The <code>KeyStore</code> interface means the same logic runs against a fake in-memory store in tests and Supabase in production — that's <b>Dependency Inversion</b> (depend on an interface, not a concrete database). <b>Interview line:</b> "Storage is behind an interface, so tests use an in-memory store and prod uses Supabase without changing a line of business logic."</p>
+      </div>
+      <p><code>UserContext</code> replaces the old global vault: a plain object holding <em>this user's</em> keys and provider order, passed into <code>get_provider_for(ctx, settings)</code>. No globals anywhere.</p>
+    </section>
+
+    <section id="p2" class="rv">
+      <div class="phase">
+        <div class="p">P2</div>
+        <div>
+          <h3>Web YouTube OAuth + the quota story</h3>
+          <p class="lead">Connect channels from a real website, and deal with YouTube's strict upload limit.</p>
+        </div>
+      </div>
+      <p>The local app used a "loopback" that only works on your own machine. On a server we use the proper <b>web OAuth</b> flow: Google redirects back to <code>https://api.yourdomain/api/youtube/oauth/callback</code>, we swap the code for a <b>refresh token</b>, and store it encrypted per channel.</p>
+
+      <h3>The quota problem (the important one 📉)</h3>
+      <div class="box gotcha"><div class="lbl">⚠️ YouTube's brutal math</div>
+        <div class="quotacalc">
+          Free quota per Google project = <span class="big">10,000 units / day</span><br>
+          One upload (videos.insert) = <span class="big">1,600 units</span><br>
+          10,000 ÷ 1,600 ≈ <span class="big">6 uploads / DAY</span> — for the WHOLE website, not per user.
+        </div>
+      </div>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p>Every day the whole site shares a bucket that only allows ~6 uploads total. And a common "fix" doesn't work: <b>API keys can only READ</b> (search videos, read stats). <b>Uploads need OAuth</b>, and the upload cost is charged to <em>whoever's Google project the login belongs to</em>. So adding more API keys gives more <em>research</em> room, but <b>zero</b> extra uploads. We verified this and did not build a useless "per-user upload key" column.</p>
+      </div>
+
+      <h3>The solution: shared bucket, then bring-your-own</h3>
+      <div class="diagram">
+        <div class="row">
+          <div class="node"><b>Single upload</b></div>
+          <div class="arrow">→</div>
+          <div class="node acc"><b>Try app's shared quota</b><small>~6/day free for all</small></div>
+          <div class="arrow">→ if full (403) →</div>
+          <div class="node net"><b>Use user's OWN Google client</b><small>their own 6/day bucket</small></div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <div class="node"><b>Bulk upload</b></div>
+          <div class="arrow">→ always →</div>
+          <div class="node net"><b>User's OWN client only</b><small>never touches shared quota</small></div>
+        </div>
+      </div>
+      <p>This is <code>uploadrouting.run_with_quota_fallback</code>: for a single upload it tries the app's client, and on a <code>403 quotaExceeded</code> it falls back to the user's own OAuth client (which they add through a guided wizard: create project → enable API → make OAuth client → paste 2 values). Bulk uploads are <b>always</b> BYO, so heavy users never drain the free bucket for everyone.</p>
+      <div class="box why"><div class="lbl">🎓 Why this model?</div>
+        <p>It keeps the product <b>free and instant for casual users</b> (they never even see the wizard) while making <b>power users self-fund</b> their own quota — and it's honest about a hard platform limit instead of pretending to beat it. <b>Interview line:</b> "We route uploads through a shared pool with graceful BYO-credential fallback, because upload quota is charged to the OAuth client's project and can't be multiplied with API keys."</p>
+      </div>
+      <p>Each channel remembers <em>which</em> client authorized it (keyed by <code>user_id, channel_id, client_kind</code>) so a channel can hold both an "app" and a "user" connection and we always charge the right bucket.</p>
+    </section>
+
+    <section id="p3" class="rv">
+      <div class="phase">
+        <div class="p">P3</div>
+        <div>
+          <h3>Transcription API + a real job queue</h3>
+          <p class="lead">Stop relying on the user's CPU, and stop doing heavy work inside the web request.</p>
+        </div>
+      </div>
+      <h3>Transcription (the ears, moved to the cloud)</h3>
+      <p>Local Whisper needs a beefy machine <em>per user</em> — impossible when everyone shares one small server. So <code>transcriber.py</code> puts transcription behind an interface with swappable bodies: <b>Deepgram</b>, <b>OpenAI</b>, or still-local Whisper, chosen by an env var <code>TM_TRANSCRIBER</code>. All return the exact same <code>Transcript</code> shape, so the pipeline doesn't change.</p>
+      <div class="box why"><div class="lbl">🎓 Why an interface with three bodies?</div><p>Same DIP idea as storage: we can start cheap (local Whisper on the VM), and flip a single env var to a paid API if the server gets busy — no code change. <b>Interview line:</b> "Transcription is a pluggable port; we pick the adapter by config, trading cost vs. server load without touching the pipeline."</p></div>
+
+      <h3>The job queue (a proper to-do list)</h3>
+      <div class="box plain"><div class="lbl">🧒 In plain English</div>
+        <p>Local jobs ran on a <b>thread inside the web server</b> and the job list lived in memory — fine for one person, dangerous for many (a restart loses everything; heavy work blocks the server). The fix is a classic pattern: the web server just <b>writes a note</b> ("transcribe video X") onto a shared to-do list (<b>Redis</b>), and a <b>separate worker</b> process picks notes off and does the heavy lifting.</p>
+      </div>
+      <div class="diagram">
+        <div class="row">
+          <div class="node acc"><b>Web server</b><small>gunicorn</small></div>
+          <div class="arrow">→ enqueue →</div>
+          <div class="node"><b>Redis</b><small>the to-do list</small></div>
+          <div class="arrow">→ pick up →</div>
+          <div class="node acc"><b>Worker</b><small>rq worker</small></div>
+          <div class="arrow">→ writes result →</div>
+          <div class="node db"><b>Supabase</b></div>
+        </div>
+      </div>
+      <p><code>jobqueue.py</code> keeps the same interface with <code>InMemoryJobQueue</code> (threads, for tests) and <code>RQJobQueue</code> (Redis, for production), picked by whether <code>REDIS_URL</code> is set.</p>
+      <div class="box why"><div class="lbl">🎓 Why split web from worker?</div><p>The web server stays <b>fast and responsive</b> (it never blocks on a 3-minute transcription), heavy work <b>survives restarts</b> and retries, and you can scale workers independently. <b>Interview line:</b> "We moved long-running work off the request path onto a Redis-backed queue with a separate worker — the standard way to keep a web tier responsive and resilient."</p></div>
+    </section>
+
+    <section id="p4" class="rv">
+      <div class="phase">
+        <div class="p">P4</div>
+        <div>
+          <h3>Deploy: where it all runs</h3>
+          <p class="lead">Free, always-on hosting + HTTPS + the browser-to-server plumbing.</p>
+        </div>
+      </div>
+      <ul>
+        <li><b>Frontend → Vercel</b> (free static hosting). It's given one setting, <code>VITE_API_URL</code>, so it knows where the backend lives, and it sends the JWT on every call.</li>
+        <li><b>Backend → Oracle Cloud Always-Free VM</b> running <b>gunicorn</b> (the production web engine, via <code>wsgi.py</code>) + the <b>rq worker</b> (<code>worker.py</code>) + Redis + ffmpeg, kept alive by <b>systemd</b>, with HTTPS auto-provisioned by <b>Caddy</b>.</li>
+        <li><b>CORS</b> — because the frontend (vercel.app) and backend (your domain) are different origins, the backend must explicitly allow the frontend. That's the env-gated <code>TM_ALLOWED_ORIGIN</code> block (inert locally, on in production).</li>
+      </ul>
+      <div class="box why"><div class="lbl">🎓 Why Oracle Always-Free instead of Render/Railway?</div>
+        <p>We need <b>24/7 uptime</b>, real CPU/RAM for ffmpeg + transcription, and a <b>separate worker</b> — all for <b>$0</b>. Render's free tier <b>sleeps after 15 min</b>, gives only 512MB/0.1 CPU (too small for ffmpeg), and its worker is <b>paid</b>. Pinging it to stay awake doesn't fix the resource ceiling. Oracle's Ampere A1 free tier is genuinely always-on with 4 cores / 24 GB. <b>Interview line:</b> "We chose Oracle Always-Free because the workload needs a persistent, non-sleeping box with enough CPU for media processing and a background worker — the free PaaS tiers sleep and are resource-capped."</p>
+      </div>
+      <div class="box plain"><div class="lbl">🧒 What's WSGI / gunicorn?</div><p>Flask's built-in server is a toy for development. <b>gunicorn</b> is the grown-up server that runs many workers, handles real traffic, and restarts cleanly. <b>WSGI</b> is just the standard "plug" (<code>wsgi.py</code>) that lets gunicorn start your Flask app.</p></div>
+    </section>
+
+    <section id="flow" class="rv">
+      <h2><span class="n">4</span>Follow one click: "Publish this video" (hosted)</h2>
+      <div class="steps">
+        <div class="step"><b>Browser</b> calls <code>POST /api/drafts/&lt;slug&gt;/publish</code> with the JWT in the header.</div>
+        <div class="step"><b>before_request</b> verifies the JWT → builds the <code>UserContext</code> for that user (their keys, their channels).</div>
+        <div class="step">The server <b>enqueues</b> an upload job to Redis and instantly returns a <code>job_id</code> (no waiting).</div>
+        <div class="step">The <b>worker</b> picks it up, downloads the source video to a temp dir, and calls <code>run_with_quota_fallback</code>: try the app's shared client → on <code>403 quotaExceeded</code>, use the user's own client.</div>
+        <div class="step">YouTube accepts the upload; we set title/description/tags/thumbnail, optional pinned comment, save the result, and <b>delete the source video</b> (privacy).</div>
+        <div class="step">Browser polls the job → shows "Published ✓" with the new video link.</div>
+      </div>
+    </section>
+
+    <section id="solid" class="rv">
+      <h2><span class="n">5</span>How we kept the code clean (SOLID)</h2>
+      <p>Interviewers love SOLID. Here's where each principle actually shows up in this codebase — with a real example, not a textbook definition.</p>
+      <table>
+        <tr><th>Principle</th><th>Where it lives here</th></tr>
+        <tr><td><b>S</b> — Single Responsibility</td><td><code>KeyCrypto</code> only encrypts, <code>KeyStore</code> only persists, <code>KeyService</code> only orchestrates. Each has one reason to change.</td></tr>
+        <tr><td><b>O</b> — Open/Closed</td><td>Add a new AI provider or transcriber = a new class; existing code is untouched.</td></tr>
+        <tr><td><b>L</b> — Liskov</td><td>Any <code>Transcriber</code> / <code>Provider</code> body is a drop-in for its interface; the pipeline can't tell which one it got.</td></tr>
+        <tr><td><b>I</b> — Interface Segregation</td><td>Small, focused ABCs (<code>KeyStore</code>, <code>ChannelStore</code>, <code>JobQueue</code>) instead of one giant "store everything" class.</td></tr>
+        <tr><td><b>D</b> — Dependency Inversion</td><td>Services depend on the <em>interface</em>; we inject <code>InMemory*</code> in tests and <code>Supabase*</code> in prod. This is the single biggest win of the rebuild.</td></tr>
+      </table>
+      <div class="box ok"><div class="lbl">✅ The one-sentence version</div><p>"Every external thing — the database, YouTube, the AI, transcription, the job runner — sits behind a small interface, so the core logic never depends on a vendor and is fully testable with fakes."</p></div>
+    </section>
+
+    <section id="tests" class="rv">
+      <h2><span class="n">6</span>64 tests (why we wrote them first)</h2>
+      <p>The whole rebuild was done <b>test-first</b>: 64 tests cover key rotation, the SEO scorer, config parsing, YouTube key rotation, the KeyService (masked view never leaks the raw key, users are isolated, data persists), OAuth URL building + code exchange, upload routing/fallback, the channel stores, transcriber parsing, and the job queue.</p>
+      <div class="box plain"><div class="lbl">🧒 Why bother?</div><p>Because we rebuilt the <b>foundations</b> while the local app still had to keep working. Tests are a safety net: they let us change scary things (auth, encryption, uploads) and instantly know if we broke something. The in-memory fakes (thanks to DIP above) mean tests run in milliseconds with no real database or network.</p></div>
+      <div class="box why"><div class="lbl">🎓 Interview line</div><p>"I built the SaaS foundations behind interfaces specifically so they'd be unit-testable with in-memory doubles — 64 fast tests gave me the confidence to rewire auth and uploads without a live server."</p></div>
+    </section>
+
+    <section id="compliance" class="rv">
+      <h2><span class="n">7</span>Privacy &amp; the YouTube audit</h2>
+      <p>Uploading on a user's behalf uses a <b>sensitive</b> YouTube scope (<code>youtube.force-ssl</code>), which Google <b>audits</b> before letting more than 100 people use it. Two things had to be true:</p>
+      <ul>
+        <li><b>Honest privacy policy.</b> We rewrote it from the local "stays on your device / nothing touches our servers" to the hosted truth: <b>"encrypted at rest on our servers, we never read it, source videos deleted after processing."</b> It also carries Google's required <b>Limited Use</b> disclosure and a revoke-access link.</li>
+        <li><b>Least privilege.</b> We ask for exactly one scope, only to do what the user clicks (upload + set metadata + optional pinned comment), and store the token encrypted.</li>
+      </ul>
+      <div class="box gotcha"><div class="lbl">⚠️ Why this mattered</div><p>Shipping the old "never touches our servers" copy while actually storing keys server-side would be <b>false</b> — an instant audit failure (and dishonest). Fixing the copy first was a compliance blocker we cleared before anything else.</p></div>
+    </section>
+
+    <section id="choices" class="rv">
+      <h2><span class="n">8</span>Every big choice, for interviews 🎓</h2>
+      <table>
+        <tr><th>Choice</th><th>Why (the line to say)</th></tr>
+        <tr><td><b>Local → hosted SaaS</b></td><td>"Zero-install, click-a-link onboarding beats a private local app for reach; we accepted the trade-off that secrets now live encrypted on our servers."</td></tr>
+        <tr><td><b>Vercel + Oracle split</b></td><td>"Static frontend on free CDN; Python/ffmpeg/worker needs a persistent box, so the backend runs on an always-free VM."</td></tr>
+        <tr><td><b>Oracle over Render</b></td><td>"Free PaaS tiers sleep and are resource-capped and their workers are paid; the media workload needs a non-sleeping box with real CPU."</td></tr>
+        <tr><td><b>Stateless JWT auth</b></td><td>"Removed global mutable state; identity travels per-request so multi-tenant requests never collide and we can scale horizontally."</td></tr>
+        <tr><td><b>Master-key Fernet, server-side</b></td><td>"Standard AES via Fernet; the master key lives only in server env, so a database leak yields only ciphertext."</td></tr>
+        <tr><td><b>Service-role, backend-only tables</b></td><td>"Secret tables are never exposed to the browser; only the backend (with the service role) reads them."</td></tr>
+        <tr><td><b>Interfaces + injected stores (DIP)</b></td><td>"Every vendor sits behind a port; fakes in tests, real adapters in prod, core logic vendor-free."</td></tr>
+        <tr><td><b>Redis + RQ job queue</b></td><td>"Long jobs off the request path for a responsive, restart-safe, independently scalable worker tier."</td></tr>
+        <tr><td><b>Transcription API (pluggable)</b></td><td>"Per-user Whisper doesn't fit a shared box; a config-selected adapter trades cost vs. load."</td></tr>
+        <tr><td><b>Shared→BYO upload quota</b></td><td>"Free/instant for casual users, self-funded for power users, honest about YouTube's 6/day-per-project limit."</td></tr>
+      </table>
+    </section>
+
+    <section id="status" class="rv">
+      <h2><span class="n">9</span>What's built, what's left</h2>
+      <p>Being precise about status is itself a good interview signal — you know the difference between "coded + tested" and "wired into production."</p>
+      <table>
+        <tr><th>Item</th><th>State</th></tr>
+        <tr><td>P1 modules (KeyCrypto, KeyStore, KeyService, UserContext, auth_web, provider-for-context)</td><td><span class="status st-done">built + tested</span></td></tr>
+        <tr><td>P2 modules (web OAuth, oauth clients, channel store, upload routing)</td><td><span class="status st-done">built + tested</span></td></tr>
+        <tr><td>P3 modules (transcriber adapters, job queue)</td><td><span class="status st-done">built + tested</span></td></tr>
+        <tr><td>P4 scaffolding (requirements-prod, wsgi, worker, CORS, privacy rewrite, deploy runbook)</td><td><span class="status st-done">done</span></td></tr>
+        <tr><td>Live route-wiring (JWT before_request, KeyService routes, oauth routes, jobqueue/transcriber swap, frontend API URL)</td><td><span class="status st-pend">pending — do on the VM vs live Supabase</span></td></tr>
+      </table>
+      <div class="box plain"><div class="lbl">🧒 Why not wired yet?</div><p>On purpose: we built and tested every new part <b>without touching the working local app</b>, so nothing broke while we prepared the SaaS. The final "flip the switch" step is best done on the real server against the real database, following the checklist in <code>docs/deploy-oracle.md</code> (Part B).</p></div>
+    </section>
+
+    <div class="foot">Production architecture handbook · Companion to the <b>local/</b> handbook. Together they tell the whole story: a private local app, re-architected into an honest, testable, multi-tenant SaaS.</div>
+  </main>
+</div>
+
+<script>
+  const bar=document.getElementById('bar');
+  addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight);bar.style.width=(p*100)+'%';});
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('.rv').forEach(n=>io.observe(n));
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.remove('on'));map.get(e.target.id)?.classList.add('on');}}),{rootMargin:'-40% 0px -55% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>so.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Hosted backend only (Oracle VM). Local dev doesn't need these.
+-r requirements.txt
+gunicorn>=21.2        # production WSGI server (Linux)
+flask-cors>=4.0       # allow the Vercel frontend origin
+redis>=5.0            # job queue backend
+rq>=1.16              # background worker (generate/publish jobs)

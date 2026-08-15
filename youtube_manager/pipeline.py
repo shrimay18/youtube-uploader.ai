@@ -94,7 +94,7 @@ def build_draft(
     # 3. Research ---------------------------------------------------------
     from . import research as rs
     log("[3/5] SEO research (autocomplete + trends)...")
-    yt_key = config.env("YOUTUBE_API_KEY")
+    yt_key = config.youtube_api_keys()   # list; rotated on quota in research
     research = rs.research(
         transcript.text, settings.get("research", {}), niche_hint=profile.get("niche", ""),
     )

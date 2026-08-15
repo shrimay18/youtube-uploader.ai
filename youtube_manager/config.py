@@ -71,7 +71,10 @@ def admin_config() -> dict:
     dashboard stays completely dormant.
     """
     sb = settings().get("supabase", {}) or {}
-    emails = sb.get("admin_emails") or []
+    # Admin emails are PII, so they live in .env (TM_ADMIN_EMAILS, comma-separated)
+    # and are kept out of the committed YAML. Fall back to YAML for backward compat.
+    env_emails = os.environ.get("TM_ADMIN_EMAILS", "")
+    emails = [e for e in env_emails.split(",")] if env_emails.strip() else (sb.get("admin_emails") or [])
     if isinstance(emails, str):
         emails = [emails]
     return {
@@ -186,3 +189,21 @@ def paths() -> Paths:
 
 def env(name: str, default: str | None = None) -> str | None:
     return os.environ.get(name, default)
+
+
+def youtube_api_keys() -> list[str]:
+    """App-level YouTube Data API keys for READ/SEO research, rotated on quota.
+
+    Reads YOUTUBE_API_KEY (may be comma-separated) plus YOUTUBE_API_KEY_2..7.
+    NOTE: these are for search/videos.list only — uploads use OAuth and their
+    quota is charged to the OAuth client's project, not to these keys.
+    """
+    raw: list[str] = []
+    raw += (os.environ.get("YOUTUBE_API_KEY", "") or "").split(",")
+    for i in range(2, 8):
+        raw.append(os.environ.get(f"YOUTUBE_API_KEY_{i}", "") or "")
+    out: list[str] = []
+    for k in (s.strip() for s in raw):
+        if k and k not in out:
+            out.append(k)
+    return out

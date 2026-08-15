@@ -18,6 +18,7 @@ Endpoints
 """
 from __future__ import annotations
 
+import os
 import threading
 import uuid
 from pathlib import Path
@@ -97,6 +98,24 @@ def create_app():
     dist = root / "frontend" / "dist"
     app = Flask(__name__, static_folder=None)
     app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024 * 1024  # 4 GB uploads
+
+    from .logging_setup import get_logger
+    _log = get_logger("youtube_manager.web")
+
+    @app.errorhandler(Exception)
+    def _handle_error(e):
+        from werkzeug.exceptions import HTTPException
+        if isinstance(e, HTTPException):
+            return e                                  # let 404/405/… pass through
+        _log.exception("Unhandled error: %s %s", request.method, request.path)
+        return jsonify({"error": "Something went wrong. Please try again."}), 500
+
+    # Hosted mode: allow the Vercel frontend origin (comma-separated). Unset = local, no CORS.
+    _origins = os.environ.get("TM_ALLOWED_ORIGIN")
+    if _origins:
+        from flask_cors import CORS
+        CORS(app, resources={r"/api/*": {"origins": [o.strip() for o in _origins.split(",") if o.strip()]}},
+             supports_credentials=True)
 
     # ---- Auth (local, single-user; keys encrypted on this device) ----
     OPEN = {"/api/health", "/api/config", "/api/auth/status", "/api/auth/setup",
@@ -590,6 +609,9 @@ def serve(port: int = 8765, open_browser: bool = True) -> None:
     import os
     import webbrowser
 
+    from .logging_setup import configure_logging, get_logger
+    configure_logging()
+    get_logger("youtube_manager").info("Starting web app on port %s", port)
     app = create_app()
     url = f"http://127.0.0.1:{port}/"
     os.environ["TM_APP_URL"] = url  # so Google sign-in redirects back to the right port

@@ -48,8 +48,43 @@ def _keys_for(name: str) -> list:
     return [v] if v else []
 
 
+def _build_chain(settings: dict, order: list, keys_for, custom_map: dict) -> LLMProvider:
+    """Shared engine-chain builder. `keys_for(name)->list` and `custom_map` decouple
+    the key SOURCE (global vault OR a per-request UserContext) from the wiring."""
+    def _custom(c):
+        from .openai_provider import OpenAIProvider
+        p = OpenAIProvider({"host": c.get("base") or "https://api.openai.com/v1",
+                            "model": c.get("model") or "gpt-4o-mini"}, [c["key"]])
+        p.name = c.get("name") or "custom"
+        return p
+
+    norm = {"claude": "anthropic"}
+    chain, seen_custom = [], set()
+    for token in order:
+        name = norm.get(token.lower(), token.lower())
+        if name in ("gemini", "openai", "anthropic", "groq"):
+            keys = keys_for(name)
+            if keys:
+                chain.append((name, _build(name, settings, keys)))
+        elif name == "ollama":
+            chain.append((name, _build("ollama", settings, None)))
+        elif token in custom_map:
+            seen_custom.add(token)
+            chain.append((custom_map[token].get("name") or "custom", _custom(custom_map[token])))
+    for cid, c in custom_map.items():   # safety: any custom not listed in order
+        if cid not in seen_custom:
+            chain.append((c.get("name") or "custom", _custom(c)))
+
+    if not chain:
+        first = order[0] if order else "gemini"
+        return _build(first, settings, keys_for(first))  # surfaces its "no key" error
+    if len(chain) == 1:
+        return chain[0][1]
+    return FallbackProvider(chain)
+
+
 def get_provider(settings: dict) -> LLMProvider:
-    """Build the engine chain from the user's preference order (or settings)."""
+    """Build the engine chain from the signed-in user's vault (legacy/local path)."""
     order = None
     try:
         from .. import vault
@@ -68,37 +103,17 @@ def get_provider(settings: dict) -> LLMProvider:
             custom_map = {c["id"]: c for c in vault.custom_providers() if c.get("key")}
     except Exception:
         pass
+    return _build_chain(settings, order, _keys_for, custom_map)
 
-    def _custom(c):
-        from .openai_provider import OpenAIProvider
-        p = OpenAIProvider({"host": c.get("base") or "https://api.openai.com/v1",
-                            "model": c.get("model") or "gpt-4o-mini"}, [c["key"]])
-        p.name = c.get("name") or "custom"
-        return p
 
-    norm = {"claude": "anthropic"}
-    chain, seen_custom = [], set()
-    for token in order:
-        name = norm.get(token.lower(), token.lower())
-        if name in ("gemini", "openai", "anthropic", "groq"):
-            keys = _keys_for(name)
-            if keys:
-                chain.append((name, _build(name, settings, keys)))
-        elif name == "ollama":
-            chain.append((name, _build("ollama", settings, None)))
-        elif token in custom_map:
-            seen_custom.add(token)
-            chain.append((custom_map[token].get("name") or "custom", _custom(custom_map[token])))
-    for cid, c in custom_map.items():   # safety: any custom not listed in order
-        if cid not in seen_custom:
-            chain.append((c.get("name") or "custom", _custom(c)))
-
-    if not chain:
-        first = order[0] if order else "gemini"
-        return _build(first, settings, _keys_for(first))  # surfaces its "no key" error
-    if len(chain) == 1:
-        return chain[0][1]
-    return FallbackProvider(chain)
+def get_provider_for(ctx, settings: dict) -> LLMProvider:
+    """Build the engine chain from a per-request UserContext (hosted/multi-tenant path)."""
+    order = list(ctx.engine_order()) if ctx.has_llm() else []
+    if not order:
+        primary = (settings.get("engine") or "gemini").lower()
+        order = [primary] + [n.lower() for n in (settings.get("fallback") or []) if n.lower() != primary]
+    custom_map = {c["id"]: c for c in ctx.custom_providers()}
+    return _build_chain(settings, order, ctx.keys_for, custom_map)
 
 
 class FallbackProvider(LLMProvider):

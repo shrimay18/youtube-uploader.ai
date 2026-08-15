@@ -1,20 +1,33 @@
 # Secrets — never commit
+.env
+.env.*
+!.env.example
 config/client_secret.json
 config/token*.json
 config/account.json
 config/*.secret.*
-.env
+# Encrypted runtime state (per-user accounts + admin-authored fixed content).
+# Safe even if leaked (it's encrypted), but it's per-machine state, not source.
+config/*.enc
 
 # Python
 .venv/
+venv/
 __pycache__/
 *.pyc
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
 
 # Working artifacts
 drafts/
 downloads/
 *.wav
 *.mp3
+logs/
+*.log
 
 # Frontend
 frontend/node_modules/

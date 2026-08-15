@@ -7,12 +7,11 @@
 supabase:
   url:      "https://vjfxmsfmyeiogeghmzrx.supabase.co"
   anon_key: "sb_publishable_Mn7Xgk35qcBtXio3y7sjdA_PNRyJ2Vf"
-  # Admin dashboard: only these emails can open it, and ONLY on a machine that has
-  # SUPABASE_SERVICE_KEY set in .env (the service_role/secret key — never commit it,
-  # never ship it to users). On user installs this stays dormant.
-  admin_emails:
-    - "shrimaysomani18@gmail.com"
-    - "wcgroup.blr@gmail.com"
+  # Admin dashboard: only whitelisted emails can open it, and ONLY on a machine that
+  # has SUPABASE_SERVICE_KEY set in .env (the service_role/secret key — never commit
+  # it, never ship it to users). On user installs this stays dormant.
+  # Admin emails are PII: set them in .env as TM_ADMIN_EMAILS (comma-separated),
+  # not here. See .env.example.
 
 # --- Channels -----------------------------------------------------------
 # You have multiple YouTube channels. Define each here and pick one per upload
